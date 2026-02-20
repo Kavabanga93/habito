@@ -862,17 +862,9 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
   ]
 }`;
 
-      const apiKey = process.env.REACT_APP_ANTHROPIC_KEY;
-      if (!apiKey) throw new Error("No API key found");
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/anthropic", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-allow-browser": "true",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 1000,
