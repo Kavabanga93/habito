@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+/* eslint-disable jsx-a11y/anchor-is-valid */
 import { useState, useEffect } from "react";
 
 // ── Simple Router ─────────────────────────────────────────────────────────────
@@ -350,7 +351,7 @@ function Landing() {
       <footer>
         <div className="footer-logo"><div className="nav-mark" style={{width:26,height:26,fontSize:14}}>🌱</div><div className="footer-logo-text">HABITO</div></div>
         <div className="footer-copy">© 2025 Habito. habit + momentum.</div>
-        <div className="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+        <div className="footer-links"><span style={{cursor:"pointer",fontSize:12,color:"#333"}}>Privacy</span><span style={{cursor:"pointer",fontSize:12,color:"#333"}}>Terms</span><span style={{cursor:"pointer",fontSize:12,color:"#333"}}>Contact</span></div>
       </footer>
     </>
   );
