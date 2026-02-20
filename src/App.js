@@ -873,8 +873,18 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
       });
 
       const data = await response.json();
+      console.log("API response:", JSON.stringify(data));
+
+      // Check for API-level errors
+      if (data.error) throw new Error("API error: " + data.error.message);
+      if (!data.content || !data.content[0]) throw new Error("No content in response: " + JSON.stringify(data));
+
       const text = data.content[0].text.replace(/```json|```/g, "").trim();
+      console.log("Parsed text:", text);
+
       const parsed = JSON.parse(text);
+      if (!parsed.blocks || !Array.isArray(parsed.blocks)) throw new Error("Invalid blocks in response");
+
       const blocks = parsed.blocks.map(b => ({ id: uid(), title: b.title, duration: b.duration }));
       setPreview({ name: parsed.name, blocks });
     } catch (e) {
