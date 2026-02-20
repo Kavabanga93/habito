@@ -16,6 +16,23 @@ function usePath() {
 function navigate(to) {
   window.history.pushState({}, "", to);
   window.dispatchEvent(new PopStateEvent("popstate"));
+  // Track page view in GA
+  if (window.gtag) window.gtag("event", "page_view", { page_path: to });
+}
+
+// ── Analytics event tracker ───────────────────────────────────────────────────
+function track(eventName, params = {}) {
+  if (window.gtag) window.gtag("event", eventName, params);
+  // Also save to our own storage for the dashboard
+  const key = "habito_analytics";
+  try {
+    const raw = localStorage.getItem(key);
+    const log = raw ? JSON.parse(raw) : [];
+    log.push({ event: eventName, params, ts: Date.now(), date: new Date().toISOString().slice(0, 10) });
+    // Keep last 2000 events
+    if (log.length > 2000) log.splice(0, log.length - 2000);
+    localStorage.setItem(key, JSON.stringify(log));
+  } catch(_) {}
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -192,9 +209,32 @@ const S = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
+const GA_ID = "G-6NWM8YEXS7";
+
 export default function Root() {
   const path = usePath();
+
+  useEffect(() => {
+    // Inject GA script once
+    if (!document.getElementById("ga-script")) {
+      const s1 = document.createElement("script");
+      s1.id = "ga-script";
+      s1.async = true;
+      s1.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+      document.head.appendChild(s1);
+      const s2 = document.createElement("script");
+      s2.id = "ga-init";
+      s2.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{send_page_view:false});`;
+      document.head.appendChild(s2);
+    }
+    // Track current page
+    setTimeout(() => {
+      if (window.gtag) window.gtag("event", "page_view", { page_path: path });
+    }, 500);
+  }, [path]);
+
   if (path === "/app") return <HabitoApp />;
+  if (path === "/dashboard") return <Dashboard />;
   return <Landing />;
 }
 
@@ -399,9 +439,14 @@ function HabitoApp() {
     setRoutines(prev => prev.map(r => {
       if (r.id !== routineId) return r;
       const todayDone = r.history[today] || [];
-      const newDone = todayDone.includes(blockId)
-        ? todayDone.filter(b => b !== blockId)
-        : [...todayDone, blockId];
+      const isCompleting = !todayDone.includes(blockId);
+      const newDone = isCompleting
+        ? [...todayDone, blockId]
+        : todayDone.filter(b => b !== blockId);
+      // Track full routine completion
+      if (isCompleting && newDone.length === r.blocks.length) {
+        track("routine_completed", { routine_name: r.name, date: today });
+      }
       return { ...r, history: { ...r.history, [today]: newDone } };
     }));
   };
@@ -734,7 +779,7 @@ function CreateModal({ onSave, onClose }) {
 function ChooseMode({ onSelect }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <button onClick={() => onSelect("ai")} style={{
+      <button onClick={() => { track("routine_create_start", { method: "ai" }); onSelect("ai"); }} style={{
         background: "#0d1a00", border: "1px solid #f4c43040", borderRadius: 12,
         padding: "24px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s",
       }}
@@ -746,7 +791,7 @@ function ChooseMode({ onSelect }) {
         <div style={{ fontSize: 13, color: "#555", lineHeight: 1.5 }}>Answer a few questions and let AI build a personalized routine based on your goals, schedule, and lifestyle.</div>
       </button>
 
-      <button onClick={() => onSelect("manual")} style={{
+      <button onClick={() => { track("routine_create_start", { method: "manual" }); onSelect("manual"); }} style={{
         background: "#0e0e0e", border: "1px solid #222", borderRadius: 12,
         padding: "24px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s",
       }}
@@ -895,7 +940,10 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
   };
 
   const handleSave = () => {
-    if (preview) onSave({ name: preview.name, emoji, color, blocks: preview.blocks });
+    if (preview) {
+      track("routine_created", { method: "ai", name: preview.name, goal: answers.goal || "" });
+      onSave({ name: preview.name, emoji, color, blocks: preview.blocks });
+    }
   };
 
   // Loading state
@@ -1030,6 +1078,7 @@ function ManualBuilder({ onSave }) {
     if (!name.trim()) return window.alert("Give your routine a name!");
     const validBlocks = blocks.filter(b => b.title.trim());
     if (validBlocks.length === 0) return window.alert("Add at least one block.");
+    track("routine_created", { method: "manual", name: name.trim() });
     onSave({ name: name.trim(), emoji, color, blocks: validBlocks });
   };
 
@@ -1111,6 +1160,204 @@ function ShareModal({ routine, onClose, onToast }) {
         </button>
         <div style={{ marginTop: 10, fontSize: 12, color: "#2a2a2a", textAlign: "center" }}>
           Share anywhere — messages, Discord, Twitter, Notion
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Admin Dashboard ───────────────────────────────────────────────────────────
+function Dashboard() {
+  const [log, setLog] = useState([]);
+  const [routines, setRoutines] = useState([]);
+
+  useEffect(() => {
+    // Load analytics log
+    try {
+      const raw = localStorage.getItem("habito_analytics");
+      setLog(raw ? JSON.parse(raw) : []);
+    } catch(_) { setLog([]); }
+    // Load routines
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const d = raw ? JSON.parse(raw) : null;
+      setRoutines(d?.routines || []);
+    } catch(_) { setRoutines([]); }
+  }, []);
+
+  // ── Computed stats ──
+  const today = todayKey();
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().slice(0, 10);
+  });
+
+  const totalVisits = log.filter(e => e.event === "page_view").length;
+  const aiCreations = log.filter(e => e.event === "routine_created" && e.params?.method === "ai").length;
+  const manualCreations = log.filter(e => e.event === "routine_created" && e.params?.method === "manual").length;
+  const totalCompletions = log.filter(e => e.event === "routine_completed").length;
+  const todayCompletions = log.filter(e => e.event === "routine_completed" && e.date === today).length;
+
+  // Completions per day (last 7)
+  const completionsPerDay = last7Days.map(date => ({
+    date,
+    label: new Date(date + "T12:00:00").toLocaleDateString("en", { weekday: "short" }),
+    count: log.filter(e => e.event === "routine_completed" && e.date === date).length,
+  }));
+  const maxCompletions = Math.max(...completionsPerDay.map(d => d.count), 1);
+
+  // AI vs manual
+  const totalCreations = aiCreations + manualCreations;
+  const aiPct = totalCreations ? Math.round((aiCreations / totalCreations) * 100) : 0;
+  const manualPct = totalCreations ? 100 - aiPct : 0;
+
+  // Popular goals from AI questionnaire
+  const goalCounts = {};
+  log.filter(e => e.event === "routine_created" && e.params?.goal).forEach(e => {
+    const g = e.params.goal;
+    goalCounts[g] = (goalCounts[g] || 0) + 1;
+  });
+  const topGoals = Object.entries(goalCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // Popular routine names
+  const nameCounts = {};
+  log.filter(e => e.event === "routine_created" && e.params?.name).forEach(e => {
+    const n = e.params.name;
+    nameCounts[n] = (nameCounts[n] || 0) + 1;
+  });
+  const topNames = Object.entries(nameCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const DS = {
+    page: { minHeight: "100vh", background: "#080808", color: "#f0f0f0", fontFamily: "'DM Sans', sans-serif", padding: "0 0 60px" },
+    topbar: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 28px", borderBottom: "1px solid #1a1a1a", position: "sticky", top: 0, background: "#080808", zIndex: 50 },
+    title: { fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: "0.1em", color: "#f4c430" },
+    body: { padding: "28px", maxWidth: 900, margin: "0 auto" },
+    grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14, marginBottom: 28 },
+    statCard: (color) => ({ background: "#111", border: `1px solid #1e1e1e`, borderLeft: `3px solid ${color}`, borderRadius: 12, padding: "20px" }),
+    statVal: (color) => ({ fontFamily: "'Bebas Neue', sans-serif", fontSize: 42, letterSpacing: "0.04em", color, lineHeight: 1, marginBottom: 4 }),
+    statLabel: { fontSize: 11, color: "#444", textTransform: "uppercase", letterSpacing: "0.1em" },
+    section: { background: "#111", border: "1px solid #1e1e1e", borderRadius: 12, padding: "22px", marginBottom: 16 },
+    sectionTitle: { fontSize: 12, color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 },
+    bar: (pct, color) => ({ height: "100%", width: `${pct}%`, background: color, borderRadius: 3, minWidth: pct > 0 ? 4 : 0, transition: "width 0.5s" }),
+  };
+
+  return (
+    <div style={DS.page}>
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+      <div style={DS.topbar}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: 13, fontFamily: "'DM Sans', sans-serif" }} onClick={() => navigate("/app")}>← Back to App</button>
+          <div style={DS.title}>📊 HABITO DASHBOARD</div>
+        </div>
+        <div style={{ fontSize: 12, color: "#333" }}>Your analytics · {new Date().toLocaleDateString("en", { dateStyle: "medium" })}</div>
+      </div>
+
+      <div style={DS.body}>
+
+        {/* Key stats */}
+        <div style={DS.grid}>
+          <div style={DS.statCard("#f4c430")}>
+            <div style={DS.statVal("#f4c430")}>{totalVisits}</div>
+            <div style={DS.statLabel}>Total Page Views</div>
+          </div>
+          <div style={DS.statCard("#5bc8ff")}>
+            <div style={DS.statVal("#5bc8ff")}>{totalCreations}</div>
+            <div style={DS.statLabel}>Routines Created</div>
+          </div>
+          <div style={DS.statCard("#4ade80")}>
+            <div style={DS.statVal("#4ade80")}>{totalCompletions}</div>
+            <div style={DS.statLabel}>Total Completions</div>
+          </div>
+          <div style={DS.statCard("#ff6b35")}>
+            <div style={DS.statVal("#ff6b35")}>{todayCompletions}</div>
+            <div style={DS.statLabel}>Completions Today</div>
+          </div>
+          <div style={DS.statCard("#c084fc")}>
+            <div style={DS.statVal("#c084fc")}>{routines.length}</div>
+            <div style={DS.statLabel}>Active Routines</div>
+          </div>
+        </div>
+
+        {/* Completions chart */}
+        <div style={DS.section}>
+          <div style={DS.sectionTitle}>Routine completions — last 7 days</div>
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", height: 80 }}>
+            {completionsPerDay.map((d, i) => (
+              <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+                <div style={{ fontSize: 11, color: "#555" }}>{d.count > 0 ? d.count : ""}</div>
+                <div style={{ width: "100%", background: "#1a1a1a", borderRadius: 4, height: 52, display: "flex", alignItems: "flex-end", overflow: "hidden" }}>
+                  <div style={{ width: "100%", height: `${(d.count / maxCompletions) * 100}%`, minHeight: d.count > 0 ? 4 : 0, background: "#4ade80", borderRadius: 4, transition: "height 0.5s" }} />
+                </div>
+                <div style={{ fontSize: 10, color: "#333" }}>{d.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI vs Manual */}
+        <div style={DS.section}>
+          <div style={DS.sectionTitle}>Creation method — AI vs Manual</div>
+          {totalCreations === 0 ? (
+            <div style={{ fontSize: 13, color: "#333" }}>No routines created yet</div>
+          ) : (
+            <>
+              <div style={{ display: "flex", gap: 16, marginBottom: 14, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#f4c430" }} />
+                  <span style={{ fontSize: 13, color: "#888" }}>🤖 AI Generated</span>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: "#f4c430" }}>{aiCreations} ({aiPct}%)</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#5bc8ff" }} />
+                  <span style={{ fontSize: 13, color: "#888" }}>✏️ Manual</span>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: "#5bc8ff" }}>{manualCreations} ({manualPct}%)</span>
+                </div>
+              </div>
+              <div style={{ height: 12, background: "#1a1a1a", borderRadius: 6, overflow: "hidden", display: "flex" }}>
+                <div style={{ width: `${aiPct}%`, background: "#f4c430", transition: "width 0.5s", minWidth: aiPct > 0 ? 4 : 0 }} />
+                <div style={{ width: `${manualPct}%`, background: "#5bc8ff", transition: "width 0.5s", minWidth: manualPct > 0 ? 4 : 0 }} />
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Top goals + Top routine names */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={DS.section}>
+            <div style={DS.sectionTitle}>Top goals (AI users)</div>
+            {topGoals.length === 0 ? (
+              <div style={{ fontSize: 13, color: "#333" }}>No data yet</div>
+            ) : topGoals.map(([goal, count], i) => (
+              <div key={i} style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#666", marginBottom: 4 }}>
+                  <span>{goal}</span><span style={{ color: "#f4c430" }}>{count}</span>
+                </div>
+                <div style={{ height: 4, background: "#1a1a1a", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${(count / topGoals[0][1]) * 100}%`, background: "#f4c430", borderRadius: 2 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={DS.section}>
+            <div style={DS.sectionTitle}>Popular routine names</div>
+            {topNames.length === 0 ? (
+              <div style={{ fontSize: 13, color: "#333" }}>No data yet</div>
+            ) : topNames.map(([name, count], i) => (
+              <div key={i} style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#666", marginBottom: 4 }}>
+                  <span>{name}</span><span style={{ color: "#5bc8ff" }}>{count}</span>
+                </div>
+                <div style={{ height: 4, background: "#1a1a1a", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${(count / topNames[0][1]) * 100}%`, background: "#5bc8ff", borderRadius: 2 }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 20, fontSize: 12, color: "#2a2a2a", textAlign: "center" }}>
+          Note: Stats are stored locally per browser. For cross-device analytics, check Google Analytics at analytics.google.com
         </div>
       </div>
     </div>
