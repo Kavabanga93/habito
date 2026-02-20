@@ -705,6 +705,307 @@ function MiniStat({ label, value, color }) {
 
 // ── Create Modal ──────────────────────────────────────────────────────────────
 function CreateModal({ onSave, onClose }) {
+  const [mode, setMode] = useState("choose"); // "choose" | "ai" | "manual"
+
+  return (
+    <div style={S.modal} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={S.modalBox}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: "0.1em", color: "#f4c430" }}>
+            {mode === "choose" ? "NEW ROUTINE" : mode === "ai" ? "AI ROUTINE BUILDER" : "BUILD MANUALLY"}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {mode !== "choose" && (
+              <button style={S.btn("ghost")} onClick={() => setMode("choose")}>← Back</button>
+            )}
+            <button style={S.btn("ghost")} onClick={onClose}><Icon name="close" size={16} /></button>
+          </div>
+        </div>
+
+        {mode === "choose" && <ChooseMode onSelect={setMode} />}
+        {mode === "ai" && <AIQuestionnaire onSave={onSave} />}
+        {mode === "manual" && <ManualBuilder onSave={onSave} />}
+      </div>
+    </div>
+  );
+}
+
+// ── Choose Mode ───────────────────────────────────────────────────────────────
+function ChooseMode({ onSelect }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <button onClick={() => onSelect("ai")} style={{
+        background: "#0d1a00", border: "1px solid #f4c43040", borderRadius: 12,
+        padding: "24px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s",
+      }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = "#f4c430"}
+        onMouseLeave={e => e.currentTarget.style.borderColor = "#f4c43040"}
+      >
+        <div style={{ fontSize: 28, marginBottom: 8 }}>🤖</div>
+        <div style={{ fontSize: 16, fontWeight: 500, color: "#f4c430", marginBottom: 6 }}>Generate with AI</div>
+        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.5 }}>Answer a few questions and let AI build a personalized routine based on your goals, schedule, and lifestyle.</div>
+      </button>
+
+      <button onClick={() => onSelect("manual")} style={{
+        background: "#0e0e0e", border: "1px solid #222", borderRadius: 12,
+        padding: "24px 20px", cursor: "pointer", textAlign: "left", transition: "all 0.2s",
+      }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = "#444"}
+        onMouseLeave={e => e.currentTarget.style.borderColor = "#222"}
+      >
+        <div style={{ fontSize: 28, marginBottom: 8 }}>✏️</div>
+        <div style={{ fontSize: 16, fontWeight: 500, color: "#f0f0f0", marginBottom: 6 }}>Build Manually</div>
+        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.5 }}>Create your own routine from scratch — add blocks, set durations, and customise everything yourself.</div>
+      </button>
+    </div>
+  );
+}
+
+// ── AI Questionnaire ──────────────────────────────────────────────────────────
+const QUESTIONS = [
+  {
+    id: "goal",
+    question: "What's your main goal?",
+    type: "single",
+    options: ["Be more productive", "Get fit & healthy", "Learn new skills", "Reduce stress & improve wellbeing", "Build a morning routine", "Other"],
+  },
+  {
+    id: "schedule",
+    question: "What's your work schedule?",
+    type: "single",
+    options: ["9-5 office job", "Remote / work from home", "Freelancer / self-employed", "Student", "Shift worker", "Stay at home"],
+  },
+  {
+    id: "time",
+    question: "How much time can you dedicate daily?",
+    type: "single",
+    options: ["30 minutes", "1 hour", "1-2 hours", "2-3 hours", "3+ hours"],
+  },
+  {
+    id: "wakeup",
+    question: "What time do you usually wake up?",
+    type: "single",
+    options: ["Before 6am", "6-7am", "7-8am", "8-9am", "After 9am"],
+  },
+  {
+    id: "struggle",
+    question: "What's your biggest daily struggle?",
+    type: "single",
+    options: ["Procrastination & focus", "No energy or motivation", "Too many distractions", "Poor sleep", "No time for myself", "Staying consistent"],
+  },
+  {
+    id: "workout",
+    question: "Do you want to include exercise?",
+    type: "single",
+    options: ["Yes — in the morning", "Yes — at midday", "Yes — in the evening", "No exercise for now"],
+  },
+  {
+    id: "learning",
+    question: "Do you want a learning block?",
+    type: "single",
+    options: ["Yes — for work skills", "Yes — for a hobby", "Yes — reading", "No learning block"],
+  },
+  {
+    id: "wind",
+    question: "How do you want to end your day?",
+    type: "single",
+    options: ["Evening review & planning", "Relaxation & wind-down", "Creative time", "Family / social time", "Just shut down and rest"],
+  },
+];
+
+function AIQuestionnaire({ onSave }) {
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [emoji, setEmoji] = useState("🌅");
+  const [color, setColor] = useState("#f4c430");
+
+  const q = QUESTIONS[step];
+  const progress = Math.round((step / QUESTIONS.length) * 100);
+
+  const answer = (val) => {
+    const newAnswers = { ...answers, [q.id]: val };
+    setAnswers(newAnswers);
+    if (step < QUESTIONS.length - 1) {
+      setStep(step + 1);
+    } else {
+      generateRoutine(newAnswers);
+    }
+  };
+
+  const generateRoutine = async (finalAnswers) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const prompt = `You are a productivity and wellness coach. Based on the user's answers below, generate a personalized daily routine.
+
+User answers:
+- Main goal: ${finalAnswers.goal}
+- Work schedule: ${finalAnswers.schedule}
+- Available time per day: ${finalAnswers.time}
+- Wake up time: ${finalAnswers.wakeup}
+- Biggest struggle: ${finalAnswers.struggle}
+- Exercise preference: ${finalAnswers.workout}
+- Learning preference: ${finalAnswers.learning}
+- Evening preference: ${finalAnswers.wind}
+
+Create a realistic, practical daily routine with 8-12 blocks. Each block should have a title and duration.
+
+Respond ONLY with a valid JSON object in this exact format, no extra text:
+{
+  "name": "Routine name (short, 2-4 words)",
+  "blocks": [
+    { "title": "Block name", "duration": "X min" },
+    ...
+  ]
+}`;
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+
+      const data = await response.json();
+      const text = data.content[0].text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(text);
+      const blocks = parsed.blocks.map(b => ({ id: uid(), title: b.title, duration: b.duration }));
+      setPreview({ name: parsed.name, blocks });
+    } catch (e) {
+      setError("Something went wrong generating your routine. Please try again.");
+    }
+    setLoading(false);
+  };
+
+  const handleSave = () => {
+    if (preview) onSave({ name: preview.name, emoji, color, blocks: preview.blocks });
+  };
+
+  // Loading state
+  if (loading) return (
+    <div style={{ textAlign: "center", padding: "48px 0" }}>
+      <div style={{ fontSize: 40, marginBottom: 16, animation: "spin 1.5s linear infinite", display: "inline-block" }}>🌱</div>
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
+      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#f4c430", letterSpacing: "0.1em", marginBottom: 8 }}>Building your routine...</div>
+      <div style={{ fontSize: 13, color: "#555" }}>AI is personalising your daily blocks</div>
+    </div>
+  );
+
+  // Error state
+  if (error) return (
+    <div style={{ textAlign: "center", padding: "32px 0" }}>
+      <div style={{ fontSize: 13, color: "#ff4444", marginBottom: 16 }}>{error}</div>
+      <button style={{ ...S.btn("primary"), margin: "0 auto" }} onClick={() => generateRoutine(answers)}>Try Again</button>
+    </div>
+  );
+
+  // Preview generated routine
+  if (preview) return (
+    <div>
+      <div style={{ fontSize: 13, color: "#555", marginBottom: 16, textAlign: "center" }}>
+        ✨ Your personalized routine is ready — review and save it!
+      </div>
+
+      <label style={S.label}>Routine Name</label>
+      <input style={{ ...S.input, marginBottom: 18 }} value={preview.name}
+        onChange={e => setPreview(p => ({ ...p, name: e.target.value }))} />
+
+      <label style={S.label}>Emoji</label>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+        {EMOJIS.map(e => (
+          <button key={e} onClick={() => setEmoji(e)} style={{
+            width: 36, height: 36, borderRadius: 8,
+            border: `2px solid ${emoji === e ? color : "#222"}`,
+            background: emoji === e ? "#ffffff0a" : "transparent",
+            fontSize: 18, cursor: "pointer",
+          }}>{e}</button>
+        ))}
+      </div>
+
+      <label style={S.label}>Color</label>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+        {COLORS.map(c => (
+          <button key={c} onClick={() => setColor(c)} style={{
+            width: 26, height: 26, borderRadius: "50%", background: c,
+            border: `3px solid ${color === c ? "#fff" : "transparent"}`,
+            cursor: "pointer",
+          }} />
+        ))}
+      </div>
+
+      <label style={S.label}>Generated Blocks ({preview.blocks.length})</label>
+      <div style={{ maxHeight: 220, overflowY: "auto", marginBottom: 18 }}>
+        {preview.blocks.map((block, i) => (
+          <div key={block.id} style={{
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "10px 14px", background: "#0e0e0e",
+            border: "1px solid #1a1a1a", borderRadius: 8, marginBottom: 6,
+          }}>
+            <div style={{ width: 20, height: 20, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#080808", fontWeight: 700, minWidth: 20 }}>{i + 1}</div>
+            <div style={{ flex: 1, fontSize: 13, color: "#ddd" }}>{block.title}</div>
+            <div style={{ fontSize: 11, color: "#444" }}>{block.duration}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 10 }}>
+        <button style={{ ...S.btn("outline"), flex: 1, justifyContent: "center" }} onClick={() => { setPreview(null); setStep(0); setAnswers({}); }}>
+          Start Over
+        </button>
+        <button style={{ ...S.btn("primary"), flex: 2, justifyContent: "center", padding: "12px" }} onClick={handleSave}>
+          Save Routine <Icon name="arrow" size={14} />
+        </button>
+      </div>
+    </div>
+  );
+
+  // Question steps
+  return (
+    <div>
+      {/* Progress bar */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#444", marginBottom: 8 }}>
+          <span>Question {step + 1} of {QUESTIONS.length}</span>
+          <span>{progress}%</span>
+        </div>
+        <div style={{ height: 3, background: "#1a1a1a", borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ width: `${progress}%`, height: "100%", background: "#f4c430", borderRadius: 2, transition: "width 0.3s" }} />
+        </div>
+      </div>
+
+      <div style={{ fontSize: 17, fontWeight: 500, color: "#f0f0f0", marginBottom: 20, lineHeight: 1.4 }}>{q.question}</div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {q.options.map(opt => (
+          <button key={opt} onClick={() => answer(opt)} style={{
+            background: "#0e0e0e", border: "1px solid #1e1e1e",
+            borderRadius: 9, padding: "12px 16px", cursor: "pointer",
+            textAlign: "left", fontSize: 14, color: "#aaa",
+            fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#f4c430"; e.currentTarget.style.color = "#f0f0f0"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "#1e1e1e"; e.currentTarget.style.color = "#aaa"; }}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+
+      {step > 0 && (
+        <button style={{ ...S.btn("ghost"), marginTop: 16 }} onClick={() => setStep(step - 1)}>← Previous</button>
+      )}
+    </div>
+  );
+}
+
+// ── Manual Builder ────────────────────────────────────────────────────────────
+function ManualBuilder({ onSave }) {
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("🎯");
   const [color, setColor] = useState("#f4c430");
@@ -715,65 +1016,58 @@ function CreateModal({ onSave, onClose }) {
   const updateBlock = (id, field, val) => setBlocks(b => b.map(x => x.id === id ? { ...x, [field]: val } : x));
 
   const handleSave = () => {
-    if (!name.trim()) return alert("Give your routine a name!");
+    if (!name.trim()) return window.alert("Give your routine a name!");
     const validBlocks = blocks.filter(b => b.title.trim());
-    if (validBlocks.length === 0) return alert("Add at least one block.");
+    if (validBlocks.length === 0) return window.alert("Add at least one block.");
     onSave({ name: name.trim(), emoji, color, blocks: validBlocks });
   };
 
   return (
-    <div style={S.modal} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={S.modalBox}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: "0.1em", color: "#f4c430" }}>NEW ROUTINE</div>
-          <button style={S.btn("ghost")} onClick={onClose}><Icon name="close" size={16} /></button>
-        </div>
+    <div>
+      <label style={S.label}>Routine Name</label>
+      <input style={{ ...S.input, marginBottom: 18 }} placeholder="e.g. Morning Focus" value={name} onChange={e => setName(e.target.value)} />
 
-        <label style={S.label}>Routine Name</label>
-        <input style={{ ...S.input, marginBottom: 18 }} placeholder="e.g. Morning Focus" value={name} onChange={e => setName(e.target.value)} />
-
-        <label style={S.label}>Emoji</label>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
-          {EMOJIS.map(e => (
-            <button key={e} onClick={() => setEmoji(e)} style={{
-              width: 36, height: 36, borderRadius: 8,
-              border: `2px solid ${emoji === e ? color : "#222"}`,
-              background: emoji === e ? "#ffffff0a" : "transparent",
-              fontSize: 18, cursor: "pointer",
-            }}>{e}</button>
-          ))}
-        </div>
-
-        <label style={S.label}>Color</label>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
-          {COLORS.map(c => (
-            <button key={c} onClick={() => setColor(c)} style={{
-              width: 26, height: 26, borderRadius: "50%", background: c,
-              border: `3px solid ${color === c ? "#fff" : "transparent"}`,
-              cursor: "pointer",
-            }} />
-          ))}
-        </div>
-
-        <label style={S.label}>Blocks</label>
-        {blocks.map((block, i) => (
-          <div key={block.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <input style={{ ...S.input, flex: 2 }} placeholder={`Block ${i + 1}`} value={block.title} onChange={e => updateBlock(block.id, "title", e.target.value)} />
-            <input style={{ ...S.input, flex: 1 }} placeholder="Duration" value={block.duration} onChange={e => updateBlock(block.id, "duration", e.target.value)} />
-            {blocks.length > 1 && (
-              <button style={S.btn("danger")} onClick={() => removeBlock(block.id)}><Icon name="trash" size={14} /></button>
-            )}
-          </div>
+      <label style={S.label}>Emoji</label>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+        {EMOJIS.map(e => (
+          <button key={e} onClick={() => setEmoji(e)} style={{
+            width: 36, height: 36, borderRadius: 8,
+            border: `2px solid ${emoji === e ? color : "#222"}`,
+            background: emoji === e ? "#ffffff0a" : "transparent",
+            fontSize: 18, cursor: "pointer",
+          }}>{e}</button>
         ))}
-
-        <button style={{ ...S.btn("outline"), marginBottom: 22, width: "100%", justifyContent: "center" }} onClick={addBlock}>
-          <Icon name="plus" size={14} /> Add Block
-        </button>
-
-        <button style={{ ...S.btn("primary"), width: "100%", justifyContent: "center", padding: "12px" }} onClick={handleSave}>
-          Create Routine <Icon name="arrow" size={14} />
-        </button>
       </div>
+
+      <label style={S.label}>Color</label>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
+        {COLORS.map(c => (
+          <button key={c} onClick={() => setColor(c)} style={{
+            width: 26, height: 26, borderRadius: "50%", background: c,
+            border: `3px solid ${color === c ? "#fff" : "transparent"}`,
+            cursor: "pointer",
+          }} />
+        ))}
+      </div>
+
+      <label style={S.label}>Blocks</label>
+      {blocks.map((block, i) => (
+        <div key={block.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <input style={{ ...S.input, flex: 2 }} placeholder={`Block ${i + 1}`} value={block.title} onChange={e => updateBlock(block.id, "title", e.target.value)} />
+          <input style={{ ...S.input, flex: 1 }} placeholder="Duration" value={block.duration} onChange={e => updateBlock(block.id, "duration", e.target.value)} />
+          {blocks.length > 1 && (
+            <button style={S.btn("danger")} onClick={() => removeBlock(block.id)}><Icon name="trash" size={14} /></button>
+          )}
+        </div>
+      ))}
+
+      <button style={{ ...S.btn("outline"), marginBottom: 22, width: "100%", justifyContent: "center" }} onClick={addBlock}>
+        <Icon name="plus" size={14} /> Add Block
+      </button>
+
+      <button style={{ ...S.btn("primary"), width: "100%", justifyContent: "center", padding: "12px" }} onClick={handleSave}>
+        Create Routine <Icon name="arrow" size={14} />
+      </button>
     </div>
   );
 }
