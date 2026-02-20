@@ -427,7 +427,7 @@ function HabitoApp() {
                 <Icon name="back" size={15} />
               </button>
             )}
-            <div style={S.logoWrap}>
+            <div style={{...S.logoWrap, cursor:"pointer"}} onClick={() => navigate("/")}>
               <div style={S.logoMark}>🌱</div>
               <div>
                 <div style={S.logoText}>HABITO</div>
