@@ -34,13 +34,13 @@ const DEFAULT_ROUTINES = [
 // ── Persistence ───────────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const r = await window.storage.get(STORAGE_KEY);
-    if (r && r.value) return JSON.parse(r.value);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
   } catch (_) {}
   return null;
 }
 async function saveData(data) {
-  try { await window.storage.set(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
 }
 
 // ── Icons ────────────────────────────────────────────────────────────────────
