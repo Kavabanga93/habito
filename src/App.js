@@ -1579,13 +1579,26 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
       if (data.error) throw new Error("API error: " + data.error.message);
       if (!data.content || !data.content[0]) throw new Error("No content in response: " + JSON.stringify(data));
 
-      const text = data.content[0].text.replace(/```json|```/g, "").trim();
-      console.log("Parsed text:", text);
+      const rawText = data.content[0].text;
+      console.log("Raw AI response:", rawText);
+
+      // Extract JSON — handle code fences, extra text before/after
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("No JSON found in response");
+      const text = jsonMatch[0];
 
       const parsed = JSON.parse(text);
-      if (!parsed.blocks || !Array.isArray(parsed.blocks)) throw new Error("Invalid blocks in response");
+      console.log("Parsed JSON:", parsed);
 
-      const blocks = parsed.blocks.map(b => ({ id: uid(), title: b.title, duration: b.duration }));
+      // Support both {blocks:[]} and {routine:{blocks:[]}} shapes
+      const rawBlocks = parsed.blocks || parsed.routine?.blocks || parsed.tasks || parsed.routine?.tasks;
+      if (!rawBlocks || !Array.isArray(rawBlocks) || rawBlocks.length === 0) throw new Error("Invalid blocks in response");
+
+      const blocks = rawBlocks.map(b => ({
+        id: uid(),
+        title: b.title || b.name || b.task || "",
+        duration: b.duration || b.time || b.length || "",
+      })).filter(b => b.title.trim());
       setPreview({ name: parsed.name, blocks });
     } catch (e) {
       console.error("API Error:", e);
