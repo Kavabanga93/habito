@@ -314,7 +314,7 @@ function Landing() {
 
         /* FEATURES with subtle texture */
         .features-wrap{background:linear-gradient(180deg,#080808 0%,#0a0a0a 50%,#080808 100%);position:relative;overflow:hidden}
-        .features-wrap::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&q=60') center/cover no-repeat;opacity:0.04;pointer-events:none}
+        .features-wrap::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&q=60') center/cover no-repeat;opacity:0.14;pointer-events:none}
         .features{padding:100px 24px;max-width:1100px;margin:0 auto;position:relative}
         .section-label{text-align:center;font-size:11px;color:var(--yellow);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px}
         .section-title{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,7vw,72px);letter-spacing:0.04em;line-height:0.95;margin-bottom:64px}
@@ -328,8 +328,8 @@ function Landing() {
 
         /* PRICING */
         .pricing{padding:100px 24px;border-top:1px solid var(--border);position:relative;overflow:hidden}
-        .pricing-img{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1400&q=80');background-size:cover;background-position:center;z-index:0;opacity:0.07}
-        .pricing::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,#080808 0%,transparent 20%,transparent 80%,#080808 100%);z-index:1;pointer-events:none}
+        .pricing-img{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1400&q=80');background-size:cover;background-position:center;z-index:0;opacity:0.18}
+        .pricing::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,#080808 0%,transparent 30%,transparent 70%,#080808 100%);z-index:1;pointer-events:none}
         .pricing-inner{max-width:800px;margin:0 auto;position:relative;z-index:2}
         .pricing-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:56px}
         @media(max-width:600px){.pricing-cards{grid-template-columns:1fr}nav{padding:16px 20px}.nav-links{display:none}}
