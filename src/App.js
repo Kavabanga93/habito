@@ -156,15 +156,23 @@ const S = {
   app: {
     minHeight: "100vh",
     background: "#0a0a0a",
+    backgroundImage: "url('https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&q=60')",
+    backgroundSize: "cover",
+    backgroundPosition: "center top",
+    backgroundAttachment: "fixed",
     color: "#f0f0f0",
     fontFamily: "'DM Sans', sans-serif",
     padding: "0 0 80px",
+    position: "relative",
   },
   topbar: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
     padding: "20px 24px 16px",
     borderBottom: "1px solid #1a1a1a",
-    position: "sticky", top: 0, background: "#0a0a0a", zIndex: 50,
+    position: "sticky", top: 0,
+    background: "#0a0a0af5",
+    backdropFilter: "blur(12px)",
+    zIndex: 50,
   },
   logoWrap: {
     display: "flex", alignItems: "center", gap: 8,
@@ -320,8 +328,9 @@ function Landing() {
 
         /* PRICING */
         .pricing{padding:100px 24px;border-top:1px solid var(--border);position:relative;overflow:hidden}
-        .pricing::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 100%,#f4c43008 0%,transparent 70%);pointer-events:none}
-        .pricing-inner{max-width:800px;margin:0 auto;position:relative}
+        .pricing-img{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1400&q=80');background-size:cover;background-position:center;z-index:0;opacity:0.07}
+        .pricing::before{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,#080808 0%,transparent 20%,transparent 80%,#080808 100%);z-index:1;pointer-events:none}
+        .pricing-inner{max-width:800px;margin:0 auto;position:relative;z-index:2}
         .pricing-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:56px}
         @media(max-width:600px){.pricing-cards{grid-template-columns:1fr}nav{padding:16px 20px}.nav-links{display:none}}
         .pricing-card{background:#0d0d0d;border:1px solid var(--border);border-radius:16px;padding:32px;position:relative}
@@ -418,6 +427,7 @@ function Landing() {
 
       {/* PRICING */}
       <section className="pricing" id="pricing">
+        <div className="pricing-img" />
         <div className="pricing-inner">
           <div className="section-label">Simple pricing</div>
           <h2 className="section-title">Start free.<br /><em>Upgrade when ready.</em></h2>
@@ -550,6 +560,9 @@ function HabitoApp() {
     <>
       <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
       <div style={S.app}>
+        {/* Dark overlay so image is subtle */}
+        <div style={{ position: "fixed", inset: 0, background: "linear-gradient(135deg, #0a0a0aee 0%, #0a0a0af0 50%, #0a0a0aee 100%)", zIndex: 0, pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 1 }}>
         {/* Topbar */}
         <div style={S.topbar}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -609,6 +622,7 @@ function HabitoApp() {
           <StatsView routines={routines} />
         )}
 
+        </div>
         {showCreate && <CreateModal onSave={createRoutine} onClose={() => setShowCreate(false)} />}
         {showShare && <ShareModal routine={showShare} onClose={() => setShowShare(null)} onToast={showToast} />}
 
