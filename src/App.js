@@ -273,7 +273,9 @@ function Landing() {
         :root{--bg:#080808;--yellow:#f4c430;--orange:#ff6b35;--green:#4ade80;--text:#f0f0f0;--muted:#555;--card:#0f0f0f;--border:#1a1a1a}
         *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
         body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
-        nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:#08080899;backdrop-filter:blur(12px);border-bottom:1px solid #ffffff08}
+
+        /* NAV */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:#08080899;backdrop-filter:blur(16px);border-bottom:1px solid #ffffff08}
         .nav-logo{display:flex;align-items:center;gap:10px}
         .nav-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--yellow),var(--orange));display:flex;align-items:center;justify-content:center;font-size:17px}
         .nav-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.12em}
@@ -281,36 +283,48 @@ function Landing() {
         .nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color 0.2s}
         .nav-links a:hover{color:var(--text)}
         .nav-cta{background:var(--yellow);color:#080808;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+
+        /* HERO with photo background */
         .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 80px;position:relative;overflow:hidden}
-        .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 30%,#f4c43014 0%,transparent 70%);pointer-events:none}
-        .hero-badge{display:inline-flex;align-items:center;gap:7px;background:#f4c43012;border:1px solid #f4c43030;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--yellow);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:32px;animation:fadeUp 0.6s ease both}
+        .hero-img{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1600&q=80');background-size:cover;background-position:center top;z-index:0}
+        .hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom, #080808cc 0%, #080808aa 40%, #080808ee 80%, #080808 100%);z-index:1}
+        .hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 30%,#f4c43018 0%,transparent 70%);z-index:2;pointer-events:none}
+        .hero-content{position:relative;z-index:3}
+        .hero-badge{display:inline-flex;align-items:center;gap:7px;background:#f4c43015;border:1px solid #f4c43035;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--yellow);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:32px;animation:fadeUp 0.6s ease both;backdrop-filter:blur(8px)}
         .hero-badge span{width:6px;height:6px;border-radius:50%;background:var(--yellow);display:inline-block}
-        .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,14vw,148px);letter-spacing:0.02em;line-height:0.88;margin-bottom:12px;animation:fadeUp 0.6s 0.1s ease both}
+        .hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,14vw,148px);letter-spacing:0.02em;line-height:0.88;margin-bottom:12px;animation:fadeUp 0.6s 0.1s ease both;text-shadow:0 4px 40px #00000080}
         .hero-title em{font-style:italic;font-family:'Fraunces',serif;color:var(--yellow);font-size:0.92em}
-        .hero-sub{font-size:clamp(16px,2.5vw,22px);color:var(--muted);font-weight:300;max-width:480px;line-height:1.6;margin-bottom:48px;animation:fadeUp 0.6s 0.2s ease both}
-        .hero-sub strong{color:#888;font-weight:400}
+        .hero-sub{font-size:clamp(16px,2.5vw,20px);color:#aaa;font-weight:300;max-width:480px;line-height:1.6;margin-bottom:48px;animation:fadeUp 0.6s 0.2s ease both}
+        .hero-sub strong{color:#ccc;font-weight:400}
         .hero-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:fadeUp 0.6s 0.3s ease both}
-        .btn-primary{background:var(--yellow);color:#080808;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;box-shadow:0 0 40px #f4c43030;cursor:pointer;border:none}
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 60px #f4c43050}
-        .btn-ghost{background:transparent;color:var(--muted);padding:14px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;border:1px solid #222;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;text-decoration:none}
-        .btn-ghost:hover{border-color:#444;color:var(--text)}
-        .hero-social{margin-top:56px;display:flex;gap:32px;align-items:center;font-size:13px;color:#333;animation:fadeUp 0.6s 0.4s ease both;flex-wrap:wrap;justify-content:center}
-        .hero-social strong{color:#666}
-        .features{padding:100px 24px;max-width:1100px;margin:0 auto}
+        .btn-primary{background:var(--yellow);color:#080808;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;box-shadow:0 0 40px #f4c43040;cursor:pointer;border:none}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 60px #f4c43060}
+        .btn-ghost{background:#ffffff0a;color:#aaa;padding:14px 28px;border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;border:1px solid #ffffff18;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;text-decoration:none;backdrop-filter:blur(8px)}
+        .btn-ghost:hover{border-color:#ffffff30;color:var(--text)}
+        .hero-social{margin-top:56px;display:flex;gap:32px;align-items:center;font-size:13px;color:#444;animation:fadeUp 0.6s 0.4s ease both;flex-wrap:wrap;justify-content:center}
+        .hero-social strong{color:#777}
+
+        /* FEATURES with subtle texture */
+        .features-wrap{background:linear-gradient(180deg,#080808 0%,#0a0a0a 50%,#080808 100%);position:relative;overflow:hidden}
+        .features-wrap::before{content:'';position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&q=60') center/cover no-repeat;opacity:0.04;pointer-events:none}
+        .features{padding:100px 24px;max-width:1100px;margin:0 auto;position:relative}
         .section-label{text-align:center;font-size:11px;color:var(--yellow);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:16px}
         .section-title{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,7vw,72px);letter-spacing:0.04em;line-height:0.95;margin-bottom:64px}
         .section-title em{font-family:'Fraunces',serif;font-style:italic;color:var(--yellow)}
         .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-        .feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;transition:border-color 0.2s,transform 0.2s}
+        .feature-card{background:#0d0d0d;border:1px solid #1a1a1a;border-radius:16px;padding:28px;transition:border-color 0.2s,transform 0.2s}
         .feature-card:hover{border-color:#2a2a2a;transform:translateY(-3px)}
         .feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
         .feature-card h3{font-size:17px;font-weight:500;margin-bottom:8px}
         .feature-card p{font-size:14px;color:var(--muted);line-height:1.6;font-weight:300}
-        .pricing{padding:100px 24px;background:#050505;border-top:1px solid var(--border)}
-        .pricing-inner{max-width:800px;margin:0 auto}
+
+        /* PRICING */
+        .pricing{padding:100px 24px;border-top:1px solid var(--border);position:relative;overflow:hidden}
+        .pricing::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 100%,#f4c43008 0%,transparent 70%);pointer-events:none}
+        .pricing-inner{max-width:800px;margin:0 auto;position:relative}
         .pricing-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:56px}
         @media(max-width:600px){.pricing-cards{grid-template-columns:1fr}nav{padding:16px 20px}.nav-links{display:none}}
-        .pricing-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative}
+        .pricing-card{background:#0d0d0d;border:1px solid var(--border);border-radius:16px;padding:32px;position:relative}
         .pricing-card.pro{border-color:#f4c43040;background:#0d0d00}
         .pricing-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--yellow);color:#080808;font-size:11px;font-weight:500;padding:4px 14px;border-radius:12px;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap}
         .pricing-tier{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px}
@@ -328,11 +342,17 @@ function Landing() {
         .pricing-btn.free:hover{border-color:#444;color:var(--text)}
         .pricing-btn.paid{background:var(--yellow);color:#080808;border:none}
         .pricing-btn.paid:hover{opacity:0.88}
-        .cta-section{padding:120px 24px;text-align:center;position:relative;overflow:hidden}
-        .cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 60% at 50% 50%,#f4c43010 0%,transparent 70%);pointer-events:none}
-        .cta-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,100px);letter-spacing:0.03em;line-height:0.9;margin-bottom:24px}
+
+        /* CTA with photo background */
+        .cta-section{padding:140px 24px;text-align:center;position:relative;overflow:hidden}
+        .cta-img{position:absolute;inset:0;background-image:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=80');background-size:cover;background-position:center;z-index:0}
+        .cta-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,#080808 0%,#080808bb 30%,#080808bb 70%,#080808 100%);z-index:1}
+        .cta-content{position:relative;z-index:2}
+        .cta-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,10vw,100px);letter-spacing:0.03em;line-height:0.9;margin-bottom:24px;text-shadow:0 4px 40px #00000080}
         .cta-title em{font-family:'Fraunces',serif;font-style:italic;color:var(--yellow)}
-        .cta-sub{font-size:16px;color:var(--muted);margin-bottom:40px;font-weight:300;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.6}
+        .cta-sub{font-size:16px;color:#888;margin-bottom:40px;font-weight:300;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+        /* FOOTER */
         footer{border-top:1px solid var(--border);padding:32px 48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
         .footer-logo{display:flex;align-items:center;gap:8px}
         .footer-logo-text{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.12em;color:#333}
@@ -342,6 +362,7 @@ function Landing() {
         .footer-links a:hover{color:#666}
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
       `}</style>
+
       <nav>
         <div className="nav-logo"><div className="nav-mark">🌱</div><div className="nav-name">HABITO</div></div>
         <div className="nav-links">
@@ -350,35 +371,52 @@ function Landing() {
           <button className="nav-cta" onClick={() => navigate("/app")}>Try Free →</button>
         </div>
       </nav>
+
+      {/* HERO */}
       <section className="hero">
-        <div className="hero-badge"><span></span> Now in public beta</div>
-        <h1 className="hero-title">Build habits.<br /><em>Keep momentum.</em></h1>
-        <p className="hero-sub">Habito turns your daily routine into a <strong>trackable, shareable system</strong> — with streaks, stats, and zero friction.</p>
-        <div className="hero-actions">
-          <button className="btn-primary" onClick={() => navigate("/app")}>Start for free →</button>
-          <a href="#features" className="btn-ghost">See how it works</a>
-        </div>
-        <div className="hero-social"><div>🔥 <strong>Build</strong> daily streaks</div><div>⚡ <strong>Free</strong> to get started</div><div>✓ <strong>No</strong> download needed</div></div>
-      </section>
-      <section className="features" id="features">
-        <div className="section-label">Everything you need</div>
-        <h2 className="section-title">Built for people who<br /><em>actually want to change</em></h2>
-        <div className="features-grid">
-          {[
-            {icon:"🎯",bg:"#f4c43015",title:"Custom Routines",desc:"Build any routine from scratch — name each block, set durations, pick colors and emoji."},
-            {icon:"🔥",bg:"#ff6b3515",title:"Streak Tracking",desc:"Every perfect day adds to your streak. Watch it grow and feel the pull to protect it."},
-            {icon:"📊",bg:"#5bc8ff15",title:"Progress Stats",desc:"7-day completion charts, average scores, and perfect-day counts per routine."},
-            {icon:"🌱",bg:"#4ade8015",title:"Share Your Routine",desc:"Copy your routine as a clean summary and share it anywhere — Discord, Twitter, Notion."},
-            {icon:"💾",bg:"#c084fc15",title:"Auto-Save Progress",desc:"Check a block, switch apps, come back later — your progress is always right where you left it."},
-            {icon:"⚡",bg:"#f4c43015",title:"Zero Friction",desc:"Open it, check your blocks, close it. No onboarding, no overwhelm. Just focus on doing."},
-          ].map((f,i) => (
-            <div key={i} className="feature-card">
-              <div className="feature-icon" style={{background:f.bg}}>{f.icon}</div>
-              <h3>{f.title}</h3><p>{f.desc}</p>
-            </div>
-          ))}
+        <div className="hero-img" />
+        <div className="hero-overlay" />
+        <div className="hero-glow" />
+        <div className="hero-content">
+          <div className="hero-badge"><span></span> Now in public beta</div>
+          <h1 className="hero-title">Build habits.<br /><em>Keep momentum.</em></h1>
+          <p className="hero-sub">Habito turns your daily routine into a <strong>trackable, shareable system</strong> — with streaks, stats, and zero friction.</p>
+          <div className="hero-actions">
+            <button className="btn-primary" onClick={() => navigate("/app")}>Start for free →</button>
+            <a href="#features" className="btn-ghost">See how it works</a>
+          </div>
+          <div className="hero-social">
+            <div>🔥 <strong>Build</strong> daily streaks</div>
+            <div>⚡ <strong>Free</strong> to get started</div>
+            <div>✓ <strong>No</strong> download needed</div>
+          </div>
         </div>
       </section>
+
+      {/* FEATURES */}
+      <div className="features-wrap">
+        <section className="features" id="features">
+          <div className="section-label">Everything you need</div>
+          <h2 className="section-title">Built for people who<br /><em>actually want to change</em></h2>
+          <div className="features-grid">
+            {[
+              {icon:"🎯",bg:"#f4c43015",title:"Custom Routines",desc:"Build any routine from scratch — name each task, set durations, pick colors and emoji."},
+              {icon:"🔥",bg:"#ff6b3515",title:"Streak Tracking",desc:"Every perfect day adds to your streak. Watch it grow and feel the pull to protect it."},
+              {icon:"📊",bg:"#5bc8ff15",title:"Progress Stats",desc:"7-day completion charts, average scores, and perfect-day counts per routine."},
+              {icon:"🌱",bg:"#4ade8015",title:"Share Your Routine",desc:"Copy your routine as a clean summary and share it anywhere — Discord, Twitter, Notion."},
+              {icon:"💾",bg:"#c084fc15",title:"Auto-Save Progress",desc:"Check a task, switch apps, come back later — your progress is always right where you left it."},
+              {icon:"⚡",bg:"#f4c43015",title:"Zero Friction",desc:"Open it, check your tasks, close it. No onboarding, no overwhelm. Just focus on doing."},
+            ].map((f,i) => (
+              <div key={i} className="feature-card">
+                <div className="feature-icon" style={{background:f.bg}}>{f.icon}</div>
+                <h3>{f.title}</h3><p>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* PRICING */}
       <section className="pricing" id="pricing">
         <div className="pricing-inner">
           <div className="section-label">Simple pricing</div>
@@ -410,11 +448,18 @@ function Landing() {
           </div>
         </div>
       </section>
+
+      {/* CTA with mountain/sunrise photo */}
       <section className="cta-section">
-        <h2 className="cta-title">Your streak<br />starts <em>today.</em></h2>
-        <p className="cta-sub">No download. No credit card. Just open it and start.</p>
-        <button className="btn-primary" style={{fontSize:16,padding:"16px 40px"}} onClick={() => navigate("/app")}>Launch Habito free →</button>
+        <div className="cta-img" />
+        <div className="cta-overlay" />
+        <div className="cta-content">
+          <h2 className="cta-title">Your streak<br />starts <em>today.</em></h2>
+          <p className="cta-sub">No download. No credit card. Just open it and start building the routine you've been putting off.</p>
+          <button className="btn-primary" style={{fontSize:16,padding:"16px 40px",margin:"0 auto"}} onClick={() => navigate("/app")}>Launch Habito free →</button>
+        </div>
       </section>
+
       <footer>
         <div className="footer-logo"><div className="nav-mark" style={{width:26,height:26,fontSize:14}}>🌱</div><div className="footer-logo-text">HABITO</div></div>
         <div className="footer-copy">© 2025 Habito. habit + momentum.</div>
