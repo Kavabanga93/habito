@@ -124,6 +124,33 @@ function calcCompletion(history, totalBlocks) {
 const EMOJIS = ["🌅","💪","📚","🎯","🧘","🚀","🎨","🏃","🌿","⚡","🔥","🎵","💡","🏋️","🌊"];
 const COLORS = ["#f4c430","#ff6b35","#5bc8ff","#c084fc","#4ade80","#f87171","#fb923c","#a78bfa","#34d399","#60a5fa"];
 
+const DURATIONS = [
+  "5 min", "10 min", "15 min", "20 min", "25 min", "30 min",
+  "35 min", "40 min", "45 min", "50 min", "55 min",
+  "1 hour", "1 hr 15 min", "1 hr 30 min", "1 hr 45 min",
+  "2 hours", "2 hr 30 min", "3 hours",
+];
+
+const DurationSelect = ({ value, onChange }) => (
+  <select
+    value={value}
+    onChange={e => onChange(e.target.value)}
+    style={{
+      flex: 1, background: "#161616", border: "1px solid #252525",
+      borderRadius: 8, padding: "10px 14px", color: value ? "#f0f0f0" : "#444",
+      fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none",
+      cursor: "pointer", appearance: "none",
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+      backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center",
+      paddingRight: 32,
+    }}
+  >
+    <option value="">Duration (optional)</option>
+    {DURATIONS.map(d => <option key={d} value={d}>{d}</option>)}
+  </select>
+);
+
+
 // ── STYLES ────────────────────────────────────────────────────────────────────
 const S = {
   app: {
@@ -766,13 +793,9 @@ function TaskList({ blocks, todayDone, color, onToggle, onEditBlock, onDeleteBlo
                 style={{ width: "100%", background: "#161616", border: "1px solid #333", borderRadius: 6, padding: "8px 12px", color: "#f0f0f0", fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none", marginBottom: 8, boxSizing: "border-box" }}
                 placeholder="Task name..."
               />
-              <input
-                value={editDur}
-                onChange={e => setEditDur(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && saveEdit(block.id)}
-                style={{ width: "100%", background: "#161616", border: "1px solid #333", borderRadius: 6, padding: "7px 12px", color: "#888", fontSize: 13, fontFamily: "'DM Sans', sans-serif", outline: "none", marginBottom: 10, boxSizing: "border-box" }}
-                placeholder="Duration e.g. 30 min (optional)"
-              />
+              <div style={{ marginBottom: 10 }}>
+                <DurationSelect value={editDur} onChange={setEditDur} />
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => saveEdit(block.id)} style={{ flex: 2, background: color, color: "#080808", border: "none", borderRadius: 7, padding: "8px", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
                   Save
@@ -1261,7 +1284,7 @@ function ManualBuilder({ onSave }) {
       {blocks.map((block, i) => (
         <div key={block.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <input style={{ ...S.input, flex: 2 }} placeholder={`Task name e.g. Morning run, Deep work, Read...`} value={block.title} onChange={e => updateBlock(block.id, "title", e.target.value)} />
-          <input style={{ ...S.input, flex: 1 }} placeholder="Duration" value={block.duration} onChange={e => updateBlock(block.id, "duration", e.target.value)} />
+          <DurationSelect value={block.duration} onChange={val => updateBlock(block.id, "duration", val)} />
           {blocks.length > 1 && (
             <button style={S.btn("danger")} onClick={() => removeBlock(block.id)}><Icon name="trash" size={14} /></button>
           )}
