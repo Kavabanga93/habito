@@ -434,6 +434,20 @@ function HabitoApp() {
     if (activeRoutine === id) setActiveRoutine(null);
   };
 
+  const editBlock = (routineId, blockId, newTitle, newDuration) => {
+    setRoutines(prev => prev.map(r => {
+      if (r.id !== routineId) return r;
+      return { ...r, blocks: r.blocks.map(b => b.id === blockId ? { ...b, title: newTitle, duration: newDuration } : b) };
+    }));
+  };
+
+  const deleteBlock = (routineId, blockId) => {
+    setRoutines(prev => prev.map(r => {
+      if (r.id !== routineId) return r;
+      return { ...r, blocks: r.blocks.filter(b => b.id !== blockId) };
+    }));
+  };
+
   const toggleBlock = (routineId, blockId) => {
     const today = todayKey();
     setRoutines(prev => prev.map(r => {
@@ -510,7 +524,13 @@ function HabitoApp() {
 
         {/* Views */}
         {activeRoutine && active ? (
-          <RoutineDetail routine={active} onToggle={(bid) => toggleBlock(active.id, bid)} onShare={() => setShowShare(active)} />
+          <RoutineDetail
+            routine={active}
+            onToggle={(bid) => toggleBlock(active.id, bid)}
+            onEditBlock={(bid, title, dur) => editBlock(active.id, bid, title, dur)}
+            onDeleteBlock={(bid) => deleteBlock(active.id, bid)}
+            onShare={() => setShowShare(active)}
+          />
         ) : tab === "routines" ? (
           <RoutineList routines={routines} onSelect={setActiveRoutine} onCreate={() => setShowCreate(true)} />
         ) : (
@@ -552,33 +572,77 @@ function RoutineList({ routines, onSelect, onCreate }) {
           const total = r.blocks.length;
           const pct = total ? Math.round((done / total) * 100) : 0;
           const streak = calcStreak(r.history, total);
+          const motivationalMsg = pct === 0
+            ? "Tap to start your routine →"
+            : pct === 100
+            ? "🏆 Perfect day! Come back tomorrow."
+            : `${total - done} task${total - done !== 1 ? "s" : ""} left — keep going!`;
+
           return (
-            <div key={r.id} style={S.card(r.color)} onClick={() => onSelect(r.id)}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 26 }}>{r.emoji}</span>
+            <div key={r.id} onClick={() => onSelect(r.id)} style={{
+              background: "#111",
+              border: `1px solid #1e1e1e`,
+              borderRadius: 16,
+              padding: "22px 22px 18px",
+              marginBottom: 14,
+              cursor: "pointer",
+              transition: "transform 0.15s, border-color 0.2s",
+              position: "relative",
+              overflow: "hidden",
+            }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = r.color + "66"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "#1e1e1e"; }}
+            >
+              {/* Color accent top bar */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, ${r.color}, ${r.color}44)`, borderRadius: "16px 16px 0 0" }} />
+
+              {/* Header row */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: r.color + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>{r.emoji}</div>
                   <div>
-                    <div style={{ fontWeight: 500, fontSize: 16, marginBottom: 2 }}>{r.name}</div>
-                    <div style={{ fontSize: 12, color: "#444" }}>{total} blocks</div>
+                    <div style={{ fontWeight: 600, fontSize: 17, marginBottom: 3, color: "#f0f0f0" }}>{r.name}</div>
+                    <div style={{ fontSize: 12, color: "#444" }}>{total} tasks</div>
                   </div>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                   {streak > 0 && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, color: "#ff6b35", fontSize: 12, fontWeight: 500 }}>
-                      <Icon name="flame" size={12} /> {streak}d streak
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#ff6b3518", border: "1px solid #ff6b3530", borderRadius: 20, padding: "3px 10px", color: "#ff6b35", fontSize: 12, fontWeight: 500 }}>
+                      🔥 {streak}d streak
                     </div>
                   )}
-                  <div style={{ fontSize: 12, color: pct === 100 ? "#4ade80" : "#444" }}>
-                    {done}/{total} today
+                  <div style={{ fontSize: 13, fontWeight: 500, color: pct === 100 ? "#4ade80" : r.color }}>
+                    {done}/{total}
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: 14, height: 3, background: "#1a1a1a", borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ width: `${pct}%`, height: "100%", background: r.color, borderRadius: 2, transition: "width 0.4s" }} />
+
+              {/* Progress bar */}
+              <div style={{ height: 6, background: "#1a1a1a", borderRadius: 3, overflow: "hidden", marginBottom: 10 }}>
+                <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? "#4ade80" : r.color, borderRadius: 3, transition: "width 0.4s" }} />
               </div>
-              {pct === 100 && (
-                <div style={{ marginTop: 8, fontSize: 11, color: "#4ade80" }}>✓ Complete today!</div>
-              )}
+
+              {/* Mini task preview */}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+                {r.blocks.slice(0, 4).map(b => {
+                  const isDone = (r.history[today] || []).includes(b.id);
+                  return (
+                    <div key={b.id} style={{
+                      fontSize: 11, padding: "3px 8px", borderRadius: 6,
+                      background: isDone ? r.color + "22" : "#1a1a1a",
+                      color: isDone ? r.color : "#333",
+                      border: `1px solid ${isDone ? r.color + "40" : "#222"}`,
+                      textDecoration: isDone ? "line-through" : "none",
+                    }}>{b.title}</div>
+                  );
+                })}
+                {r.blocks.length > 4 && (
+                  <div style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, background: "#1a1a1a", color: "#333" }}>+{r.blocks.length - 4} more</div>
+                )}
+              </div>
+
+              {/* Status message */}
+              <div style={{ fontSize: 12, color: pct === 100 ? "#4ade80" : "#383838" }}>{motivationalMsg}</div>
             </div>
           );
         })}
@@ -588,7 +652,7 @@ function RoutineList({ routines, onSelect, onCreate }) {
 }
 
 // ── Routine Detail ────────────────────────────────────────────────────────────
-function RoutineDetail({ routine, onToggle }) {
+function RoutineDetail({ routine, onToggle, onEditBlock, onDeleteBlock }) {
   const today = todayKey();
   const todayDone = routine.history[today] || [];
   const total = routine.blocks.length;
@@ -604,7 +668,7 @@ function RoutineDetail({ routine, onToggle }) {
           <span style={{ fontSize: 38 }}>{routine.emoji}</span>
           <div>
             <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 30, letterSpacing: "0.05em", color: routine.color, lineHeight: 1 }}>{routine.name}</div>
-            <div style={{ fontSize: 12, color: "#444", marginTop: 4 }}>{total} blocks</div>
+            <div style={{ fontSize: 12, color: "#444", marginTop: 4 }}>{total} tasks</div>
           </div>
         </div>
 
@@ -622,34 +686,14 @@ function RoutineDetail({ routine, onToggle }) {
         </div>
       </div>
 
-      <div style={{ marginBottom: 28 }}>
-        {routine.blocks.map((block, i) => {
-          const isDone = todayDone.includes(block.id);
-          return (
-            <div key={block.id} onClick={() => onToggle(block.id)} style={{
-              display: "flex", alignItems: "center", gap: 14,
-              padding: "14px 18px", borderRadius: 10, marginBottom: 8,
-              background: isDone ? "#0d1a00" : "#0e0e0e",
-              border: `1px solid ${isDone ? "#263d00" : "#1a1a1a"}`,
-              cursor: "pointer", transition: "all 0.2s",
-            }}>
-              <div style={{
-                width: 22, height: 22, minWidth: 22, borderRadius: "50%",
-                border: `2px solid ${isDone ? routine.color : "#2a2a2a"}`,
-                background: isDone ? routine.color : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                transition: "all 0.2s",
-              }}>
-                {isDone && <Icon name="check" size={12} />}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 500, color: isDone ? "#444" : "#f0f0f0", textDecoration: isDone ? "line-through" : "none", transition: "all 0.2s" }}>{block.title}</div>
-                {block.duration && <div style={{ fontSize: 12, color: "#383838", marginTop: 1 }}>{block.duration}</div>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <TaskList
+        blocks={routine.blocks}
+        todayDone={todayDone}
+        color={routine.color}
+        onToggle={onToggle}
+        onEditBlock={onEditBlock}
+        onDeleteBlock={onDeleteBlock}
+      />
 
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, color: "#3a3a3a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Last 7 days</div>
@@ -680,6 +724,109 @@ function RoutineDetail({ routine, onToggle }) {
           <div style={{ color: "#444", fontSize: 13, marginTop: 4 }}>Full routine done. See you tomorrow.</div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── TaskList with inline editing ─────────────────────────────────────────────
+function TaskList({ blocks, todayDone, color, onToggle, onEditBlock, onDeleteBlock }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editVal, setEditVal] = useState("");
+  const [editDur, setEditDur] = useState("");
+
+  const startEdit = (e, block) => {
+    e.stopPropagation();
+    setEditingId(block.id);
+    setEditVal(block.title);
+    setEditDur(block.duration || "");
+  };
+
+  const saveEdit = (blockId) => {
+    if (editVal.trim()) onEditBlock(blockId, editVal.trim(), editDur.trim());
+    setEditingId(null);
+  };
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      {blocks.map((block) => {
+        const isDone = todayDone.includes(block.id);
+        const isEditing = editingId === block.id;
+
+        if (isEditing) {
+          return (
+            <div key={block.id} style={{
+              padding: "12px 16px", borderRadius: 10, marginBottom: 8,
+              background: "#0e0e0e", border: `1px solid ${color}66`,
+            }}>
+              <input
+                autoFocus
+                value={editVal}
+                onChange={e => setEditVal(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && saveEdit(block.id)}
+                style={{ width: "100%", background: "#161616", border: "1px solid #333", borderRadius: 6, padding: "8px 12px", color: "#f0f0f0", fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none", marginBottom: 8, boxSizing: "border-box" }}
+                placeholder="Task name..."
+              />
+              <input
+                value={editDur}
+                onChange={e => setEditDur(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && saveEdit(block.id)}
+                style={{ width: "100%", background: "#161616", border: "1px solid #333", borderRadius: 6, padding: "7px 12px", color: "#888", fontSize: 13, fontFamily: "'DM Sans', sans-serif", outline: "none", marginBottom: 10, boxSizing: "border-box" }}
+                placeholder="Duration e.g. 30 min (optional)"
+              />
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => saveEdit(block.id)} style={{ flex: 2, background: color, color: "#080808", border: "none", borderRadius: 7, padding: "8px", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                  Save
+                </button>
+                <button onClick={() => setEditingId(null)} style={{ flex: 1, background: "transparent", color: "#555", border: "1px solid #222", borderRadius: 7, padding: "8px", fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                  Cancel
+                </button>
+                <button onClick={() => { onDeleteBlock(block.id); setEditingId(null); }} style={{ background: "#ff444418", color: "#ff4444", border: "1px solid #ff444430", borderRadius: 7, padding: "8px 12px", fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+                  <Icon name="trash" size={13} />
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div key={block.id} style={{
+            display: "flex", alignItems: "center", gap: 14,
+            padding: "14px 18px", borderRadius: 10, marginBottom: 8,
+            background: isDone ? "#0d1a00" : "#0e0e0e",
+            border: `1px solid ${isDone ? "#263d00" : "#1a1a1a"}`,
+            transition: "all 0.2s", position: "relative",
+          }}>
+            {/* Check circle */}
+            <div onClick={() => onToggle(block.id)} style={{
+              width: 22, height: 22, minWidth: 22, borderRadius: "50%",
+              border: `2px solid ${isDone ? color : "#2a2a2a"}`,
+              background: isDone ? color : "transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s", cursor: "pointer",
+            }}>
+              {isDone && <Icon name="check" size={12} />}
+            </div>
+
+            {/* Text */}
+            <div style={{ flex: 1 }} onClick={() => onToggle(block.id)} >
+              <div style={{ fontSize: 15, fontWeight: 500, color: isDone ? "#444" : "#f0f0f0", textDecoration: isDone ? "line-through" : "none", transition: "all 0.2s", cursor: "pointer" }}>{block.title}</div>
+              {block.duration && <div style={{ fontSize: 12, color: "#383838", marginTop: 1 }}>{block.duration}</div>}
+            </div>
+
+            {/* Edit button */}
+            <button onClick={(e) => startEdit(e, block)} style={{
+              background: "transparent", border: "none", color: "#2a2a2a",
+              cursor: "pointer", padding: "4px 6px", borderRadius: 6,
+              fontSize: 13, transition: "color 0.2s",
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+              onMouseEnter={e => e.currentTarget.style.color = "#666"}
+              onMouseLeave={e => e.currentTarget.style.color = "#2a2a2a"}
+              title="Edit task"
+            >✏️</button>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -901,7 +1048,7 @@ Create a realistic, practical daily routine with 8-12 blocks. Each block should 
 Respond ONLY with a valid JSON object in this exact format, no extra text:
 {
   "name": "Routine name (short, 2-4 words)",
-  "blocks": [
+  "tasks": [
     { "title": "Block name", "duration": "X min" },
     ...
   ]
@@ -998,7 +1145,7 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
         ))}
       </div>
 
-      <label style={S.label}>Generated Blocks ({preview.blocks.length})</label>
+      <label style={S.label}>Generated Tasks ({preview.blocks.length})</label>
       <div style={{ maxHeight: 220, overflowY: "auto", marginBottom: 18 }}>
         {preview.blocks.map((block, i) => (
           <div key={block.id} style={{
@@ -1077,7 +1224,7 @@ function ManualBuilder({ onSave }) {
   const handleSave = () => {
     if (!name.trim()) return window.alert("Give your routine a name!");
     const validBlocks = blocks.filter(b => b.title.trim());
-    if (validBlocks.length === 0) return window.alert("Add at least one block.");
+    if (validBlocks.length === 0) return window.alert("Add at least one task.");
     track("routine_created", { method: "manual", name: name.trim() });
     onSave({ name: name.trim(), emoji, color, blocks: validBlocks });
   };
@@ -1110,10 +1257,10 @@ function ManualBuilder({ onSave }) {
         ))}
       </div>
 
-      <label style={S.label}>Blocks</label>
+      <label style={S.label}>Tasks</label>
       {blocks.map((block, i) => (
         <div key={block.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <input style={{ ...S.input, flex: 2 }} placeholder={`Block ${i + 1}`} value={block.title} onChange={e => updateBlock(block.id, "title", e.target.value)} />
+          <input style={{ ...S.input, flex: 2 }} placeholder={`Task name e.g. Morning run, Deep work, Read...`} value={block.title} onChange={e => updateBlock(block.id, "title", e.target.value)} />
           <input style={{ ...S.input, flex: 1 }} placeholder="Duration" value={block.duration} onChange={e => updateBlock(block.id, "duration", e.target.value)} />
           {blocks.length > 1 && (
             <button style={S.btn("danger")} onClick={() => removeBlock(block.id)}><Icon name="trash" size={14} /></button>
@@ -1122,7 +1269,7 @@ function ManualBuilder({ onSave }) {
       ))}
 
       <button style={{ ...S.btn("outline"), marginBottom: 22, width: "100%", justifyContent: "center" }} onClick={addBlock}>
-        <Icon name="plus" size={14} /> Add Block
+        <Icon name="plus" size={14} /> Add Task
       </button>
 
       <button style={{ ...S.btn("primary"), width: "100%", justifyContent: "center", padding: "12px" }} onClick={handleSave}>
