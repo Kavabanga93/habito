@@ -1318,7 +1318,12 @@ function TaskList({ blocks, todayDone, color, onToggle, onEditBlock, onDeleteBlo
             {/* Text */}
             <div style={{ flex: 1 }} onClick={() => onToggle(block.id)} >
               <div style={{ fontSize: 15, fontWeight: 500, color: isDone ? "#444" : "#f0f0f0", textDecoration: isDone ? "line-through" : "none", transition: "all 0.2s", cursor: "pointer" }}>{block.title}</div>
-              {block.duration && <div style={{ fontSize: 12, color: "#383838", marginTop: 1 }}>{block.duration}</div>}
+              {block.startTime
+                ? <div style={{ fontSize: 12, color: "#383838", marginTop: 1 }}>{block.startTime} – {block.endTime} · {block.duration}</div>
+                : block.duration
+                ? <div style={{ fontSize: 12, color: "#383838", marginTop: 1 }}>{block.duration}</div>
+                : null
+              }
             </div>
 
             {/* Edit button */}
