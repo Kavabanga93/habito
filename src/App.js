@@ -1897,14 +1897,21 @@ function ManualBuilder({ onSave }) {
   const [emoji, setEmoji] = useState("🎯");
   const [color, setColor] = useState("#f4c430");
   const [blocks, setBlocks] = useState([{ id: uid(), title: "", duration: "" }]);
+  const [useTimings, setUseTimings] = useState(false);
+  const [startTime, setStartTime] = useState("7:00 AM");
 
   const addBlock = () => setBlocks(b => [...b, { id: uid(), title: "", duration: "" }]);
   const removeBlock = (id) => setBlocks(b => b.filter(x => x.id !== id));
   const updateBlock = (id, field, val) => setBlocks(b => b.map(x => x.id === id ? { ...x, [field]: val } : x));
 
+  // Live-compute time slots for preview
+  const blocksWithTimes = useTimings
+    ? addTimesToBlocks(blocks, startTime)
+    : blocks;
+
   const handleSave = () => {
     if (!name.trim()) return window.alert("Give your routine a name!");
-    const validBlocks = blocks.filter(b => b.title.trim());
+    const validBlocks = blocksWithTimes.filter(b => b.title.trim());
     if (validBlocks.length === 0) return window.alert("Add at least one task.");
     track("routine_created", { method: "manual", name: name.trim() });
     onSave({ name: name.trim(), emoji, color, blocks: validBlocks });
@@ -1938,16 +1945,78 @@ function ManualBuilder({ onSave }) {
         ))}
       </div>
 
-      <label style={S.label}>Tasks</label>
-      {blocks.map((block, i) => (
-        <div key={block.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <input style={{ ...S.input, flex: 2 }} placeholder={`Task name e.g. Morning run, Deep work, Read...`} value={block.title} onChange={e => updateBlock(block.id, "title", e.target.value)} />
-          <DurationSelect value={block.duration} onChange={val => updateBlock(block.id, "duration", val)} />
-          {blocks.length > 1 && (
-            <button style={S.btn("danger")} onClick={() => removeBlock(block.id)}><Icon name="trash" size={14} /></button>
-          )}
+      {/* Time scheduling toggle */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, padding: "12px 16px", background: "#0e0e0e", border: "1px solid #1e1e1e", borderRadius: 10 }}>
+        <div>
+          <div style={{ fontSize: 13, color: "#ddd", fontWeight: 500 }}>⏰ Time-specific schedule</div>
+          <div style={{ fontSize: 11, color: "#444", marginTop: 2 }}>Auto-calculate start & end times</div>
         </div>
-      ))}
+        <div
+          onClick={() => setUseTimings(t => !t)}
+          style={{
+            width: 42, height: 24, borderRadius: 12, cursor: "pointer",
+            background: useTimings ? "#f4c430" : "#222",
+            position: "relative", transition: "background 0.2s",
+          }}
+        >
+          <div style={{
+            width: 18, height: 18, borderRadius: "50%", background: "#fff",
+            position: "absolute", top: 3,
+            left: useTimings ? 21 : 3,
+            transition: "left 0.2s",
+          }} />
+        </div>
+      </div>
+
+      {/* Start time picker — only shown when toggle is on */}
+      {useTimings && (
+        <div style={{ marginBottom: 18 }}>
+          <label style={S.label}>Routine Start Time</label>
+          <select
+            value={startTime}
+            onChange={e => setStartTime(e.target.value)}
+            style={{
+              width: "100%", background: "#161616", border: "1px solid #252525",
+              borderRadius: 8, padding: "10px 14px", color: "#f0f0f0",
+              fontSize: 14, fontFamily: "'DM Sans', sans-serif", outline: "none",
+              cursor: "pointer", appearance: "none",
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 32,
+            }}
+          >
+            {["5:00 AM","5:30 AM","6:00 AM","6:30 AM","7:00 AM","7:30 AM","8:00 AM","8:30 AM","9:00 AM","9:30 AM","10:00 AM","10:30 AM","11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM"].map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <label style={S.label}>Tasks</label>
+      {blocks.map((block, i) => {
+        const timed = blocksWithTimes[i];
+        return (
+          <div key={block.id} style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                style={{ ...S.input, flex: 2 }}
+                placeholder="Task name e.g. Morning run, Deep work, Read..."
+                value={block.title}
+                onChange={e => updateBlock(block.id, "title", e.target.value)}
+              />
+              <DurationSelect value={block.duration} onChange={val => updateBlock(block.id, "duration", val)} />
+              {blocks.length > 1 && (
+                <button style={S.btn("danger")} onClick={() => removeBlock(block.id)}><Icon name="trash" size={14} /></button>
+              )}
+            </div>
+            {/* Show computed time slot live */}
+            {useTimings && timed.startTime && timed.duration && (
+              <div style={{ fontSize: 11, color: "#f4c43066", marginTop: 4, paddingLeft: 4 }}>
+                🕐 {timed.startTime} – {timed.endTime}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       <button style={{ ...S.btn("outline"), marginBottom: 22, width: "100%", justifyContent: "center" }} onClick={addBlock}>
         <Icon name="plus" size={14} /> Add Task
