@@ -640,6 +640,431 @@ function HabitoApp() {
 }
 
 // ── Routine List ──────────────────────────────────────────────────────────────
+
+// ── Articles Library ──────────────────────────────────────────────────────────
+const ARTICLES = [
+  {
+    id: "a1",
+    category: "Movement",
+    emoji: "🚶",
+    color: "#4ade80",
+    title: "The Life-Changing Benefits of Walking 30 Minutes Every Day",
+    readTime: "4 min read",
+    keywords: ["walk", "steps", "movement", "exercise", "cardio", "run", "jog"],
+    summary: "A simple daily walk might be the most underrated health habit you can build.",
+    content: `Most people underestimate walking. It's not flashy, it doesn't burn as many calories as a HIIT session, and it doesn't come with a leaderboard. But study after study shows that walking 30 minutes a day is one of the most powerful things you can do for your long-term health.
+
+**What happens to your body when you walk daily:**
+
+After just 1 week, your mood improves. Walking triggers the release of endorphins and serotonin — the same chemicals that antidepressants target. Many people report feeling noticeably calmer and more optimistic after just a few days of consistent walking.
+
+After 1 month, your cardiovascular health improves measurably. Blood pressure drops, resting heart rate decreases, and your heart becomes more efficient. You'll notice you're less winded going up stairs.
+
+After 3 months, your risk of type 2 diabetes decreases significantly. Walking improves insulin sensitivity, meaning your body handles blood sugar more effectively after meals.
+
+**The cognitive benefits are just as impressive.** A Stanford study found that walking increases creative output by an average of 60%. Many of history's greatest thinkers — Darwin, Beethoven, Nietzsche — were obsessive daily walkers who credited their walks for their best ideas.
+
+**How to make it stick:**
+
+The biggest mistake people make is treating walking as optional. Schedule it like a meeting. The best time is right after a meal — even a 10-minute post-meal walk dramatically blunts blood sugar spikes.
+
+You don't need special gear, a gym membership, or perfect weather. You just need shoes and a door.
+
+Start with 10 minutes. Build to 30. Your future self will thank you.`,
+  },
+  {
+    id: "a2",
+    category: "Deep Work",
+    emoji: "🧠",
+    color: "#5bc8ff",
+    title: "Why Your Brain Can Only Do 4 Hours of Deep Work Per Day",
+    readTime: "5 min read",
+    keywords: ["deep work", "focus", "work", "study", "productivity", "task", "concentration", "writing", "coding", "research"],
+    summary: "Science explains why pushing past your cognitive limit makes you less productive, not more.",
+    content: `Cal Newport, who coined the term "deep work," estimates that most people can sustain only 3-4 hours of truly focused cognitive work per day. Elite performers — chess grandmasters, concert pianists, world-class writers — rarely exceed this ceiling, no matter how motivated they are.
+
+Why? Because deep work depletes a finite neurological resource.
+
+**The science of cognitive fatigue:**
+
+Your prefrontal cortex — the part of your brain responsible for complex reasoning, decision-making, and focused attention — consumes enormous amounts of glucose and oxygen. After sustained effort, it simply runs low. This isn't a willpower problem. It's biology.
+
+Research from Anders Ericsson (the psychologist behind the "10,000 hours" concept) found that expert performers across fields practice deliberately for no more than 4 hours per day, almost always in the morning, split into sessions of 90 minutes or less.
+
+**What this means for your routine:**
+
+Stop trying to grind through 8 hours of "productive" work. Instead, protect your peak cognitive hours — usually the first 2-3 hours after waking — for your most important, hardest task. Guard this time fiercely. No meetings, no email, no social media.
+
+After your deep work block, switch to shallow work: emails, admin, calls. Your brain can handle these tasks even when fatigued.
+
+**The 90-minute rule:**
+
+Work in focused 90-minute blocks, then take a genuine rest (not a "check your phone" rest). This aligns with your brain's natural ultradian rhythm — the 90-minute cycle between higher and lower alertness that runs throughout your day.
+
+Fewer hours, more depth. That's the counterintuitive secret to getting more done.`,
+  },
+  {
+    id: "a3",
+    category: "Morning",
+    emoji: "🌅",
+    color: "#f4c430",
+    title: "What Happens to Your Brain in the First 30 Minutes After Waking",
+    readTime: "4 min read",
+    keywords: ["morning", "wake", "sleep", "intention", "routine", "alarm", "breakfast", "mindset"],
+    summary: "The first 30 minutes after waking sets the neurological tone for your entire day.",
+    content: `The way you spend the first 30 minutes after waking has an outsized impact on your mood, focus, and energy for the rest of the day. This isn't motivational speak — it's neuroscience.
+
+**Cortisol and the morning spike:**
+
+Within minutes of waking, your brain triggers a surge of cortisol — the "stress hormone" that's actually your body's natural alarm system. This Cortisol Awakening Response (CAR) peaks about 30 minutes after waking and is responsible for mobilizing energy, sharpening focus, and preparing you for the day.
+
+The mistake most people make: reaching for their phone immediately. Checking social media, news, or messages during this cortisol spike floods your brain with external stressors and dopamine hits before you've even gotten out of bed. This hijacks your brain's natural morning calibration.
+
+**What to do instead:**
+
+Neuroscientist Andrew Huberman recommends getting outside and exposing your eyes to natural morning light within 30 minutes of waking. This sets your circadian clock, boosts morning cortisol appropriately, and improves sleep quality the following night.
+
+Avoid screens for the first 30 minutes. Instead: stretch, drink water, journal, meditate, or simply sit quietly with your thoughts.
+
+**Setting an intention:**
+
+Research on "implementation intentions" shows that people who set a specific plan at the start of the day complete significantly more of their goals than those who rely on motivation alone. Spend 2 minutes writing down your single most important task for the day.
+
+Your morning doesn't have to be a 5am ice-bath marathon. It just has to be yours — calm, intentional, and screen-free.`,
+  },
+  {
+    id: "a4",
+    category: "Recovery",
+    emoji: "💤",
+    color: "#c084fc",
+    title: "The Hidden Power of Rest: Why Doing Nothing Makes You More Productive",
+    readTime: "5 min read",
+    keywords: ["rest", "break", "recovery", "lunch", "nap", "relax", "shutdown", "wind", "evening", "sleep"],
+    summary: "Taking real breaks isn't lazy — it's one of the highest-leverage habits you can build.",
+    content: `We live in a culture that glamorizes busyness. But the science is unambiguous: rest is not the opposite of productivity. It's what makes productivity possible.
+
+**The Default Mode Network:**
+
+When you stop focusing on a task, your brain doesn't go idle. It activates the Default Mode Network (DMN) — a system associated with memory consolidation, creative insight, and self-reflection. Some of your best ideas will come in the shower, on a walk, or just before sleep — precisely because you've stopped trying.
+
+Scientists believe the DMN is where your brain "connects the dots" between information it has absorbed. Rest isn't downtime. It's processing time.
+
+**The Zeigarnik Effect:**
+
+Your brain naturally obsesses over unfinished tasks. This is called the Zeigarnik Effect, and it's why you can't stop thinking about work when you're trying to relax. The solution? A clear "shutdown ritual" at the end of your workday — closing tabs, writing tomorrow's task list, and saying (out loud if needed) "I'm done for today." This signals your brain that it can stop monitoring the unfinished work.
+
+**Strategic rest during the day:**
+
+A 10-20 minute nap in the early afternoon (before 3pm) has been shown to restore alertness and cognitive performance to morning levels. NASA found that pilots who napped for 26 minutes showed 34% improvement in performance.
+
+Even sitting quietly with your eyes closed for 10 minutes — no phone, no input — produces measurable cognitive restoration.
+
+The highest performers aren't the ones who rest the least. They're the ones who rest most deliberately.`,
+  },
+  {
+    id: "a5",
+    category: "Fitness",
+    emoji: "💪",
+    color: "#ff6b35",
+    title: "The Minimum Effective Dose of Exercise for Maximum Results",
+    readTime: "5 min read",
+    keywords: ["workout", "gym", "exercise", "fitness", "weights", "strength", "training", "lift", "yoga", "stretch", "run", "cardio"],
+    summary: "You don't need to spend hours in the gym. Science reveals the exact minimum that delivers maximum benefit.",
+    content: `More isn't always better when it comes to exercise. In fact, the concept of the "minimum effective dose" — the smallest amount of stimulus needed to produce the desired result — is one of the most liberating ideas in fitness science.
+
+**What the research actually shows:**
+
+The American College of Sports Medicine's guidelines recommend 150 minutes of moderate aerobic activity per week — that's just 22 minutes per day. For strength training, 2 sessions per week of 8-10 exercises is enough to build and maintain muscle for most people.
+
+A landmark study published in the British Journal of Sports Medicine found that even 11 minutes of exercise per day significantly reduced the risk of cardiovascular disease, cancer, and all-cause mortality. Eleven minutes.
+
+**High-Intensity Interval Training (HIIT):**
+
+If time is your constraint, HIIT is your answer. Research consistently shows that 20-minute HIIT sessions produce comparable cardiovascular improvements to 45-60 minutes of steady-state cardio. The key is intensity — you have to actually push hard during the work intervals.
+
+**The consistency principle:**
+
+Three 30-minute workouts per week, done consistently for a year, will produce far better results than six 90-minute sessions done sporadically. Your body adapts to consistent stimulation — not occasional heroic efforts.
+
+**What to prioritize:**
+
+If you can only do one thing, make it strength training. Muscle mass is the single best predictor of long-term metabolic health, mobility, and quality of life as you age. Even two sessions per week is enough to see meaningful progress.
+
+The best workout plan is the one you'll actually stick to. Start small. Show up consistently. Adjust as you go.`,
+  },
+  {
+    id: "a6",
+    category: "Learning",
+    emoji: "📚",
+    color: "#f4c430",
+    title: "How to Actually Retain What You Learn (The Science of Memory)",
+    readTime: "5 min read",
+    keywords: ["learn", "read", "study", "book", "course", "skill", "practice", "hobby", "language", "music"],
+    summary: "Most people learn wrong. Here's how your brain actually stores information long-term.",
+    content: `You've probably had this experience: you read a book, feel inspired, and then a month later can barely remember what it was about. This isn't a memory problem. It's a learning strategy problem.
+
+**The Forgetting Curve:**
+
+In the 1880s, psychologist Hermann Ebbinghaus discovered that we forget about 50% of new information within an hour, 70% within 24 hours, and 90% within a week — unless we actively do something about it. This became known as the Forgetting Curve.
+
+The good news: the curve can be dramatically flattened with the right techniques.
+
+**Spaced Repetition:**
+
+Instead of reviewing material once right after learning it, review it at increasing intervals: after 1 day, then 3 days, then a week, then a month. Each review strengthens the memory trace and pushes the next review further into the future. Apps like Anki are built on this principle.
+
+**The Testing Effect:**
+
+Actively recalling information (testing yourself) is dramatically more effective than re-reading. Close the book and try to explain what you just learned — out loud, in writing, or to another person. This is called the Feynman Technique: if you can't explain it simply, you don't really understand it.
+
+**Interleaving:**
+
+Mixing different subjects or skills during a learning session feels harder but produces better long-term retention than focusing on one thing at a time. Your brain works harder to retrieve and apply knowledge when the context keeps changing.
+
+**Sleep is non-negotiable:**
+
+Memory consolidation happens during sleep — specifically during deep sleep stages. Pulling an all-nighter to cram is one of the worst things you can do for retention. Sleeping after learning accelerates the transfer from short-term to long-term memory by up to 40%.
+
+Learn less, more often, with more sleep. That's the formula.`,
+  },
+  {
+    id: "a7",
+    category: "Mindset",
+    emoji: "🧘",
+    color: "#4ade80",
+    title: "The Neuroscience of Habits: Why Streaks Work and How to Build Them",
+    readTime: "4 min read",
+    keywords: ["habit", "streak", "consistency", "routine", "daily", "mindset", "motivation", "meditation"],
+    summary: "Your brain is literally rewiring itself every time you complete a habit. Here's how to use that.",
+    content: `Every time you complete a habit, your brain lays down a little more myelin — a fatty sheath that wraps around neural pathways and makes them fire faster and more efficiently. Habits aren't just behavioral patterns. They're physical structures in your brain.
+
+**The Habit Loop:**
+
+Charles Duhigg's research identified a three-part loop that governs all habits: Cue → Routine → Reward. Your brain is constantly scanning for cues that trigger automatic behaviors, because automating routine decisions conserves cognitive energy for more complex tasks.
+
+The implication: habits are your brain's way of being efficient, not lazy. Building good habits is one of the highest-leverage things you can do.
+
+**Why streaks are so powerful:**
+
+Tracking streaks works because of loss aversion — one of the most robust findings in behavioral economics. We feel the pain of breaking a streak more intensely than we feel the pleasure of maintaining it. This asymmetry makes streaks uniquely motivating.
+
+The "don't break the chain" method, popularized by Jerry Seinfeld, works precisely because of this psychology. Each day you complete your habit, you're not just ticking a box — you're protecting something you've built.
+
+**The two-minute rule:**
+
+James Clear recommends starting every habit with a version that takes two minutes or less. Want to exercise? Your habit is "put on your workout clothes." Want to read? Your habit is "open the book." The goal is to make starting frictionless. Once you've started, momentum usually carries you forward.
+
+**Missing once vs. missing twice:**
+
+Research shows that missing a habit once has almost no effect on long-term outcomes. Missing twice starts a new habit — the habit of not doing it. The rule: never miss twice.
+
+Your habits are a vote for the person you want to become. Cast enough votes, and identity follows.`,
+  },
+  {
+    id: "a8",
+    category: "Nutrition",
+    emoji: "🥗",
+    color: "#4ade80",
+    title: "What to Eat (and When) to Maximize Your Energy and Focus",
+    readTime: "4 min read",
+    keywords: ["eat", "meal", "food", "breakfast", "lunch", "dinner", "nutrition", "fuel", "diet", "coffee"],
+    summary: "Your diet is the foundation your productivity is built on. Here's what the science says.",
+    content: `You can have the best routine in the world, but if your nutrition is off, you're running on a bad fuel source. Cognitive performance, mood, and sustained energy are all directly influenced by what you eat — and when.
+
+**The blood sugar rollercoaster:**
+
+Most people's energy crashes mid-morning and mid-afternoon are caused by blood sugar spikes and crashes. The typical pattern: eat a high-carb breakfast (cereal, toast, pastry), blood sugar spikes, insulin kicks in hard, blood sugar crashes, you feel foggy, tired, and irritable.
+
+The fix: prioritize protein and fat at breakfast. Eggs, Greek yogurt, nuts, or even a protein shake stabilize blood sugar and provide sustained energy for 3-4 hours.
+
+**Coffee and cortisol:**
+
+Most people drink coffee immediately after waking, which is actually the worst time. Your cortisol is naturally at its peak in the first 30-60 minutes after waking. Adding caffeine on top of peak cortisol reduces its effectiveness and accelerates tolerance.
+
+Delay your first coffee by 90 minutes after waking. You'll get more of the alertness benefit and build less dependence.
+
+**Eating for focus:**
+
+Omega-3 fatty acids (found in salmon, sardines, walnuts, and flaxseed) are directly incorporated into brain cell membranes and have been shown to improve cognitive performance and reduce brain fog.
+
+Staying hydrated is equally critical — even mild dehydration (1-2% of body weight) causes measurable decreases in focus, mood, and short-term memory.
+
+**The post-lunch dip:**
+
+The afternoon energy dip isn't inevitable — it's largely caused by large, carb-heavy lunches. Eat a smaller, protein-rich lunch and you'll largely avoid the 2pm slump that drives most people to reach for sugar or more caffeine.
+
+Food is information for your brain. Feed it well.`,
+  },
+  {
+    id: "a9",
+    category: "Evening",
+    emoji: "🌙",
+    color: "#c084fc",
+    title: "The Perfect Evening Routine: How to Set Up Tomorrow's Success Tonight",
+    readTime: "4 min read",
+    keywords: ["evening", "night", "shutdown", "review", "plan", "tomorrow", "wind", "sleep", "journal"],
+    summary: "What you do in the last hour before bed determines how good tomorrow will be.",
+    content: `Most productivity advice focuses on mornings. But the truth is, your morning starts the night before. How you wind down in the evening determines how well you sleep, how rested you feel, and how clearly you think the next day.
+
+**The shutdown ritual:**
+
+Cal Newport recommends ending every workday with a "shutdown complete" ritual — a set of actions that signal to your brain that work is finished. This might include: reviewing your task list, moving unfinished items to tomorrow, closing all tabs, and saying a specific phrase aloud (something like "shutdown complete").
+
+This matters because without a clear signal, your brain continues processing work-related thoughts into the evening — spiking cortisol and disrupting sleep.
+
+**The evening review:**
+
+Spend 5-10 minutes each evening reviewing your day. What did you complete? What didn't get done and why? What's the single most important task for tomorrow? Writing this down clears your mental RAM and reduces the "unfinished business" your brain will otherwise chew on during the night.
+
+**Light and sleep:**
+
+Exposure to blue light (phones, laptops, TVs) in the 2 hours before bed suppresses melatonin production by up to 50%, delaying sleep onset and reducing sleep quality. If you must use screens, use night mode or blue-light-blocking glasses.
+
+The ideal wind-down: dim lights, no screens, light reading, gentle stretching, or journaling. These activities signal to your nervous system that it's safe to downshift from sympathetic ("fight or flight") to parasympathetic ("rest and digest") mode.
+
+**Temperature matters:**
+
+Your core body temperature needs to drop by about 1-2 degrees Fahrenheit to initiate sleep. A warm shower 1-2 hours before bed paradoxically helps with this — it draws blood to the skin's surface, which then dissipates heat rapidly after you get out.
+
+End your day with intention. Your future self wakes up to whatever you set up tonight.`,
+  },
+  {
+    id: "a10",
+    category: "Productivity",
+    emoji: "📧",
+    color: "#5bc8ff",
+    title: "Why Batching Your Email Makes You Dramatically More Productive",
+    readTime: "3 min read",
+    keywords: ["email", "messages", "admin", "batch", "inbox", "slack", "notifications", "communication"],
+    summary: "Checking email constantly is one of the most expensive habits modern workers have.",
+    content: `The average knowledge worker checks their email 74 times per day. Each check takes about 64 seconds, but the real cost is far higher — it takes an average of 23 minutes to fully regain deep focus after an interruption.
+
+Do the math. If you're checking email 74 times a day, you're potentially losing hours of focused work time to recovery from interruptions alone.
+
+**The attention residue problem:**
+
+Researcher Sophie Leroy coined the term "attention residue" to describe what happens when you switch tasks. Even after you've moved to a new task, part of your brain remains stuck on the previous one. The more frequently you switch, the more residue accumulates, and the lower your cognitive performance becomes.
+
+Email is an attention residue machine.
+
+**The batching solution:**
+
+Process email in 2-3 dedicated batches per day — perhaps at 9am, 12pm, and 4pm. Outside these windows, your email client is closed. Your notifications are off.
+
+Most emails that feel urgent aren't. If something is truly urgent, people will call. The expectation that you respond within minutes to emails is a norm you can and should reset — by responding reliably during your batch times and communicating this to colleagues.
+
+**What to do with emails when you open them:**
+
+Use the "touch it once" rule. When you open an email, either: delete it, respond (if it takes under 2 minutes), delegate it, or schedule time to handle it. Never read an email and leave it in your inbox to be re-read later. That's double-handling.
+
+Your inbox is not your to-do list. Treat it like a mailbox — process it, empty it, close it. Then get back to the work that actually matters.`,
+  },
+];
+
+// Match articles to user's routine tasks
+function getRelevantArticles(routines) {
+  if (!routines || routines.length === 0) return ARTICLES.slice(0, 3);
+  const allTaskTitles = routines.flatMap(r => r.blocks.map(b => b.title.toLowerCase()));
+  const allText = allTaskTitles.join(" ");
+
+  const scored = ARTICLES.map(article => {
+    const matches = article.keywords.filter(kw => allText.includes(kw.toLowerCase())).length;
+    return { ...article, score: matches };
+  }).sort((a, b) => b.score - a.score);
+
+  // Return top matches first, then fill with others
+  const top = scored.filter(a => a.score > 0).slice(0, 6);
+  if (top.length < 3) {
+    const rest = scored.filter(a => a.score === 0).slice(0, 3 - top.length);
+    return [...top, ...rest];
+  }
+  return top;
+}
+
+// ── Article Section ───────────────────────────────────────────────────────────
+function ArticleSection({ routines }) {
+  const [openId, setOpenId] = useState(null);
+  const articles = getRelevantArticles(routines);
+
+  return (
+    <div style={{ marginTop: 36, paddingBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+        <div style={{ fontSize: 11, color: "#444", textTransform: "uppercase", letterSpacing: "0.12em" }}>📖 For You</div>
+        <div style={{ flex: 1, height: 1, background: "#1a1a1a" }} />
+        <div style={{ fontSize: 11, color: "#2a2a2a" }}>Based on your routines</div>
+      </div>
+
+      {articles.map(article => (
+        <div key={article.id} style={{
+          background: "#111",
+          border: `1px solid ${openId === article.id ? article.color + "44" : "#1a1a1a"}`,
+          borderRadius: 14,
+          marginBottom: 10,
+          overflow: "hidden",
+          transition: "border-color 0.2s",
+        }}>
+          {/* Article header — always visible */}
+          <div onClick={() => setOpenId(openId === article.id ? null : article.id)} style={{
+            padding: "16px 18px", cursor: "pointer", display: "flex", alignItems: "center", gap: 14,
+          }}>
+            <div style={{
+              width: 44, height: 44, minWidth: 44, borderRadius: 12,
+              background: article.color + "18",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 22,
+            }}>{article.emoji}</div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 10, color: article.color, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 500 }}>{article.category}</span>
+                <span style={{ fontSize: 10, color: "#333" }}>· {article.readTime}</span>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "#e0e0e0", lineHeight: 1.3, marginBottom: 3 }}>{article.title}</div>
+              {openId !== article.id && (
+                <div style={{ fontSize: 12, color: "#444", lineHeight: 1.4 }}>{article.summary}</div>
+              )}
+            </div>
+
+            <div style={{ color: "#333", fontSize: 18, transition: "transform 0.2s", transform: openId === article.id ? "rotate(180deg)" : "none", minWidth: 20 }}>›</div>
+          </div>
+
+          {/* Article body — expanded */}
+          {openId === article.id && (
+            <div style={{ padding: "0 18px 20px 18px" }}>
+              <div style={{ height: 1, background: "#1a1a1a", marginBottom: 16 }} />
+              {article.content.split("\n\n").map((para, i) => {
+                if (para.startsWith("**") && para.endsWith("**")) {
+                  return (
+                    <div key={i} style={{ fontSize: 13, fontWeight: 600, color: article.color, marginBottom: 8, marginTop: i > 0 ? 16 : 0 }}>
+                      {para.replace(/\*\*/g, "")}
+                    </div>
+                  );
+                }
+                // Handle inline bold
+                const parts = para.split(/\*\*(.*?)\*\*/g);
+                return (
+                  <p key={i} style={{ fontSize: 13, color: "#888", lineHeight: 1.8, marginBottom: 12, fontWeight: 300 }}>
+                    {parts.map((part, j) =>
+                      j % 2 === 1
+                        ? <strong key={j} style={{ color: "#bbb", fontWeight: 500 }}>{part}</strong>
+                        : part
+                    )}
+                  </p>
+                );
+              })}
+              <button onClick={() => setOpenId(null)} style={{
+                marginTop: 8, background: "transparent", border: `1px solid ${article.color}44`,
+                borderRadius: 8, padding: "8px 16px", color: article.color,
+                fontSize: 12, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+              }}>Close article ↑</button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function RoutineList({ routines, onSelect, onCreate }) {
   if (routines.length === 0) return (
     <div style={{ ...S.section, textAlign: "center", paddingTop: 80 }}>
@@ -733,6 +1158,7 @@ function RoutineList({ routines, onSelect, onCreate }) {
           );
         })}
       </div>
+      <ArticleSection routines={routines} />
     </div>
   );
 }
