@@ -1465,14 +1465,14 @@ function ChooseMode({ onSelect }) {
 const QUESTIONS = [
   {
     id: "goal",
-    question: "What's your main goal?",
-    type: "single",
-    options: ["Be more productive", "Get fit & healthy", "Learn new skills", "Reduce stress & improve wellbeing", "Build a morning routine", "Other"],
+    question: "What are your main goals?",
+    type: "multi",
+    options: ["Be more productive", "Get fit & healthy", "Learn new skills", "Reduce stress & improve wellbeing", "Build a morning routine", "Eat better & nutrition", "Sleep better", "Build more discipline"],
   },
   {
     id: "schedule",
     question: "What's your work schedule?",
-    type: "single",
+    type: "multi",
     options: ["9-5 office job", "Remote / work from home", "Freelancer / self-employed", "Student", "Shift worker", "Stay at home"],
   },
   {
@@ -1485,49 +1485,132 @@ const QUESTIONS = [
     id: "wakeup",
     question: "What time do you usually wake up?",
     type: "single",
-    options: ["Before 6am", "6-7am", "7-8am", "8-9am", "After 9am"],
+    options: ["5:00 AM", "5:30 AM", "6:00 AM", "6:30 AM", "7:00 AM", "7:30 AM", "8:00 AM", "8:30 AM", "9:00 AM", "9:30 AM", "10:00 AM"],
   },
   {
     id: "struggle",
-    question: "What's your biggest daily struggle?",
-    type: "single",
-    options: ["Procrastination & focus", "No energy or motivation", "Too many distractions", "Poor sleep", "No time for myself", "Staying consistent"],
+    question: "What are your biggest daily struggles?",
+    type: "multi",
+    options: ["Procrastination & focus", "No energy or motivation", "Too many distractions", "Poor sleep", "No time for myself", "Staying consistent", "Lack of discipline", "Overwhelm & anxiety", "Poor diet habits"],
   },
   {
     id: "workout",
     question: "Do you want to include exercise?",
-    type: "single",
-    options: ["Yes — in the morning", "Yes — at midday", "Yes — in the evening", "No exercise for now"],
+    type: "multi",
+    options: ["Morning workout", "Midday movement", "Evening training", "Daily walks", "Yoga / stretching", "No exercise for now"],
   },
   {
     id: "learning",
-    question: "Do you want a learning block?",
-    type: "single",
-    options: ["Yes — for work skills", "Yes — for a hobby", "Yes — reading", "No learning block"],
+    question: "What do you want to learn or develop?",
+    type: "multi",
+    options: ["Work / career skills", "A hobby or passion", "Daily reading", "Language learning", "Journaling & reflection", "No learning block"],
   },
   {
     id: "wind",
     question: "How do you want to end your day?",
-    type: "single",
-    options: ["Evening review & planning", "Relaxation & wind-down", "Creative time", "Family / social time", "Just shut down and rest"],
+    type: "multi",
+    options: ["Evening review & planning", "Relaxation & wind-down", "Creative time", "Family / social time", "Light reading", "Meditation or breathing", "Just shut down and rest"],
   },
 ];
+
+// Suggestions for each task type shown in preview
+const TASK_SUGGESTIONS = {
+  "morning ritual": ["10 min stretching", "5 min meditation", "Drink 500ml water", "Cold shower", "Journaling (5 min)", "Read 10 pages", "Healthy breakfast", "Gratitude list (3 things)"],
+  "morning routine": ["10 min stretching", "5 min meditation", "Drink 500ml water", "Cold shower", "Journaling (5 min)", "Read 10 pages", "Healthy breakfast"],
+  "workout": ["20 min run", "30 min gym session", "15 min HIIT", "20 min yoga", "30 min cycling", "Bodyweight circuit", "Swimming"],
+  "exercise": ["20 min run", "30 min gym session", "15 min HIIT", "20 min yoga", "30 min cycling"],
+  "walk": ["Neighbourhood walk", "Podcast walk", "Mindful walk (no phone)", "Walk to work", "Post-meal walk"],
+  "meditation": ["Box breathing (4-4-4-4)", "Body scan meditation", "Guided meditation app", "5 min breathwork", "Mindful sitting"],
+  "reading": ["Non-fiction chapter", "Industry articles", "Personal development book", "Fiction (leisure)", "Audiobook"],
+  "deep work": ["Write / create content", "Code a feature", "Strategic planning", "Research project", "Design work", "Client deliverable"],
+  "focus": ["Write / create content", "Code a feature", "Strategic planning", "Research project"],
+  "email": ["Process inbox to zero", "Respond to priority emails", "Unsubscribe from junk", "Draft replies", "Archive old emails"],
+  "learning": ["Online course lesson", "Skill practice (30 min)", "Watch tutorial", "Language app (Duolingo)", "Take notes on topic"],
+  "journal": ["Gratitude list (3 things)", "Brain dump", "Daily reflection", "Goals check-in", "Mood tracking"],
+  "meal": ["Prep healthy lunch", "Cook dinner", "Meal plan for week", "Smoothie / shake", "Mindful eating (no screens)"],
+  "review": ["Review today's tasks", "Plan tomorrow", "Weekly goals check", "Habit tracker update", "Celebrate wins"],
+  "wind down": ["No screens (1hr before bed)", "Light stretching", "Read fiction", "Herbal tea", "Dim lights ritual"],
+  "sleep": ["Sleep by target time", "No screens 1hr before", "Room temperature check", "Write tomorrow's top 3 tasks"],
+  "default": ["Break it into smaller steps", "Set a 25-min timer (Pomodoro)", "Remove distractions first", "Do the hardest part first", "Track completion"],
+};
+
+function getTaskSuggestions(taskTitle) {
+  const lower = taskTitle.toLowerCase();
+  for (const [key, suggestions] of Object.entries(TASK_SUGGESTIONS)) {
+    if (lower.includes(key)) return suggestions;
+  }
+  return TASK_SUGGESTIONS["default"];
+}
+
+// Parse wake time string to minutes since midnight
+function parseWakeTime(wakeStr) {
+  const match = wakeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!match) return 7 * 60; // default 7am
+  let h = parseInt(match[1]);
+  const m = parseInt(match[2]);
+  const ampm = match[3].toUpperCase();
+  if (ampm === "PM" && h !== 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  return h * 60 + m;
+}
+
+// Format minutes since midnight to "7:00 AM"
+function fmtTime(mins) {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  const ampm = h < 12 ? "AM" : "PM";
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  return `${hh}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
+// Parse duration string to minutes
+function parseDuration(durStr) {
+  if (!durStr) return 30;
+  const hourMatch = durStr.match(/(\d+)\s*hr/i);
+  const minMatch = durStr.match(/(\d+)\s*min/i);
+  let total = 0;
+  if (hourMatch) total += parseInt(hourMatch[1]) * 60;
+  if (minMatch) total += parseInt(minMatch[1]);
+  return total || 30;
+}
+
+// Add start/end times to blocks given a wake time string
+function addTimesToBlocks(blocks, wakeTimeStr) {
+  let cursor = parseWakeTime(wakeTimeStr);
+  return blocks.map(b => {
+    const dur = parseDuration(b.duration);
+    const start = fmtTime(cursor);
+    cursor += dur;
+    const end = fmtTime(cursor);
+    return { ...b, startTime: start, endTime: end };
+  });
+}
 
 function AIQuestionnaire({ onSave }) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [selected, setSelected] = useState([]); // for multi-select current step
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(null);
   const [emoji, setEmoji] = useState("🌅");
   const [color, setColor] = useState("#f4c430");
+  const [openSuggestions, setOpenSuggestions] = useState(null); // block id
 
   const q = QUESTIONS[step];
   const progress = Math.round((step / QUESTIONS.length) * 100);
+  const isMulti = q.type === "multi";
 
-  const answer = (val) => {
+  const toggleOption = (opt) => {
+    setSelected(prev =>
+      prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]
+    );
+  };
+
+  const commitStep = (val) => {
     const newAnswers = { ...answers, [q.id]: val };
     setAnswers(newAnswers);
+    setSelected([]);
     if (step < QUESTIONS.length - 1) {
       setStep(step + 1);
     } else {
@@ -1539,25 +1622,27 @@ function AIQuestionnaire({ onSave }) {
     setLoading(true);
     setError(null);
     try {
+      const wakeTime = finalAnswers.wakeup || "7:00 AM";
       const prompt = `You are a productivity and wellness coach. Based on the user's answers below, generate a personalized daily routine.
 
 User answers:
-- Main goal: ${finalAnswers.goal}
-- Work schedule: ${finalAnswers.schedule}
+- Main goals: ${Array.isArray(finalAnswers.goal) ? finalAnswers.goal.join(", ") : finalAnswers.goal}
+- Work schedule: ${Array.isArray(finalAnswers.schedule) ? finalAnswers.schedule.join(", ") : finalAnswers.schedule}
 - Available time per day: ${finalAnswers.time}
-- Wake up time: ${finalAnswers.wakeup}
-- Biggest struggle: ${finalAnswers.struggle}
-- Exercise preference: ${finalAnswers.workout}
-- Learning preference: ${finalAnswers.learning}
-- Evening preference: ${finalAnswers.wind}
+- Wake up time: ${wakeTime}
+- Biggest struggles: ${Array.isArray(finalAnswers.struggle) ? finalAnswers.struggle.join(", ") : finalAnswers.struggle}
+- Exercise preferences: ${Array.isArray(finalAnswers.workout) ? finalAnswers.workout.join(", ") : finalAnswers.workout}
+- Learning preferences: ${Array.isArray(finalAnswers.learning) ? finalAnswers.learning.join(", ") : finalAnswers.learning}
+- Evening preferences: ${Array.isArray(finalAnswers.wind) ? finalAnswers.wind.join(", ") : finalAnswers.wind}
 
-Create a realistic, practical daily routine with 8-12 blocks. Each block should have a title and duration.
+Create a realistic daily routine with 8-12 tasks starting from their wake time of ${wakeTime}.
+Use real time durations like "30 min", "1 hour", "45 min" etc.
 
-Respond ONLY with a valid JSON object in this exact format, no extra text:
+Respond ONLY with a valid JSON object in this exact format:
 {
   "name": "Routine name (short, 2-4 words)",
   "tasks": [
-    { "title": "Block name", "duration": "X min" },
+    { "title": "Task name", "duration": "X min" },
     ...
   ]
 }`;
@@ -1573,33 +1658,26 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
       });
 
       const data = await response.json();
-      console.log("API response:", JSON.stringify(data));
-
-      // Check for API-level errors
       if (data.error) throw new Error("API error: " + data.error.message);
-      if (!data.content || !data.content[0]) throw new Error("No content in response: " + JSON.stringify(data));
+      if (!data.content || !data.content[0]) throw new Error("No content in response");
 
       const rawText = data.content[0].text;
-      console.log("Raw AI response:", rawText);
-
-      // Extract JSON — handle code fences, extra text before/after
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("No JSON found in response");
-      const text = jsonMatch[0];
 
-      const parsed = JSON.parse(text);
-      console.log("Parsed JSON:", parsed);
-
-      // Support both {blocks:[]} and {routine:{blocks:[]}} shapes
-      const rawBlocks = parsed.blocks || parsed.routine?.blocks || parsed.tasks || parsed.routine?.tasks;
-      if (!rawBlocks || !Array.isArray(rawBlocks) || rawBlocks.length === 0) throw new Error("Invalid blocks in response");
+      const parsed = JSON.parse(jsonMatch[0]);
+      const rawBlocks = parsed.tasks || parsed.blocks || parsed.routine?.tasks || parsed.routine?.blocks;
+      if (!rawBlocks || !Array.isArray(rawBlocks) || rawBlocks.length === 0) throw new Error("Invalid tasks in response");
 
       const blocks = rawBlocks.map(b => ({
         id: uid(),
         title: b.title || b.name || b.task || "",
-        duration: b.duration || b.time || b.length || "",
+        duration: b.duration || b.time || "30 min",
       })).filter(b => b.title.trim());
-      setPreview({ name: parsed.name, blocks });
+
+      // Add start/end times based on wake time
+      const timedBlocks = addTimesToBlocks(blocks, wakeTime);
+      setPreview({ name: parsed.name, blocks: timedBlocks });
     } catch (e) {
       console.error("API Error:", e);
       setError("Something went wrong: " + e.message);
@@ -1614,13 +1692,23 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
     }
   };
 
+  const addSuggestion = (blockId, suggestion) => {
+    setPreview(p => ({
+      ...p,
+      blocks: p.blocks.map(b =>
+        b.id === blockId ? { ...b, title: suggestion } : b
+      ),
+    }));
+    setOpenSuggestions(null);
+  };
+
   // Loading state
   if (loading) return (
     <div style={{ textAlign: "center", padding: "48px 0" }}>
       <div style={{ fontSize: 40, marginBottom: 16, animation: "spin 1.5s linear infinite", display: "inline-block" }}>🌱</div>
       <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#f4c430", letterSpacing: "0.1em", marginBottom: 8 }}>Building your routine...</div>
-      <div style={{ fontSize: 13, color: "#555" }}>AI is personalising your daily blocks</div>
+      <div style={{ fontSize: 13, color: "#555" }}>AI is personalising your daily tasks</div>
     </div>
   );
 
@@ -1636,7 +1724,7 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
   if (preview) return (
     <div>
       <div style={{ fontSize: 13, color: "#555", marginBottom: 16, textAlign: "center" }}>
-        ✨ Your personalized routine is ready — review and save it!
+        ✨ Review your routine — tap any task to see suggestions
       </div>
 
       <label style={S.label}>Routine Name</label>
@@ -1666,23 +1754,64 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
         ))}
       </div>
 
-      <label style={S.label}>Generated Tasks ({preview.blocks.length})</label>
-      <div style={{ maxHeight: 220, overflowY: "auto", marginBottom: 18 }}>
-        {preview.blocks.map((block, i) => (
-          <div key={block.id} style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "10px 14px", background: "#0e0e0e",
-            border: "1px solid #1a1a1a", borderRadius: 8, marginBottom: 6,
-          }}>
-            <div style={{ width: 20, height: 20, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#080808", fontWeight: 700, minWidth: 20 }}>{i + 1}</div>
-            <div style={{ flex: 1, fontSize: 13, color: "#ddd" }}>{block.title}</div>
-            <div style={{ fontSize: 11, color: "#444" }}>{block.duration}</div>
-          </div>
-        ))}
+      <label style={S.label}>Generated Tasks ({preview.blocks.length}) — tap to expand</label>
+      <div style={{ maxHeight: 320, overflowY: "auto", marginBottom: 18 }}>
+        {preview.blocks.map((block, i) => {
+          const suggestions = getTaskSuggestions(block.title);
+          const isOpen = openSuggestions === block.id;
+          return (
+            <div key={block.id} style={{ marginBottom: 6 }}>
+              {/* Task row */}
+              <div
+                onClick={() => setOpenSuggestions(isOpen ? null : block.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "10px 14px", background: isOpen ? "#161600" : "#0e0e0e",
+                  border: `1px solid ${isOpen ? color + "60" : "#1a1a1a"}`,
+                  borderRadius: isOpen ? "8px 8px 0 0" : 8,
+                  cursor: "pointer", transition: "all 0.15s",
+                }}
+              >
+                <div style={{ width: 20, height: 20, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#080808", fontWeight: 700, minWidth: 20 }}>{i + 1}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, color: "#ddd" }}>{block.title}</div>
+                  {block.startTime && (
+                    <div style={{ fontSize: 11, color: "#444", marginTop: 2 }}>
+                      {block.startTime} – {block.endTime} · {block.duration}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: 12, color: isOpen ? color : "#333", transition: "transform 0.2s", transform: isOpen ? "rotate(90deg)" : "none" }}>›</div>
+              </div>
+
+              {/* Suggestions dropdown */}
+              {isOpen && (
+                <div style={{ background: "#0a0a00", border: `1px solid ${color}30`, borderTop: "none", borderRadius: "0 0 8px 8px", padding: "8px" }}>
+                  <div style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 6px 8px" }}>
+                    Suggestions — tap to replace
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {suggestions.map((s, si) => (
+                      <button key={si} onClick={() => addSuggestion(block.id, s)} style={{
+                        background: "#1a1a00", border: `1px solid ${color}30`,
+                        borderRadius: 6, padding: "5px 10px", fontSize: 12,
+                        color: "#aaa", cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+                        transition: "all 0.15s",
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.background = color + "22"; e.currentTarget.style.color = color; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#1a1a00"; e.currentTarget.style.color = "#aaa"; }}
+                      >{s}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ display: "flex", gap: 10 }}>
-        <button style={{ ...S.btn("outline"), flex: 1, justifyContent: "center" }} onClick={() => { setPreview(null); setStep(0); setAnswers({}); }}>
+        <button style={{ ...S.btn("outline"), flex: 1, justifyContent: "center" }} onClick={() => { setPreview(null); setStep(0); setAnswers({}); setSelected([]); }}>
           Start Over
         </button>
         <button style={{ ...S.btn("primary"), flex: 2, justifyContent: "center", padding: "12px" }} onClick={handleSave}>
@@ -1692,7 +1821,7 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
     </div>
   );
 
-  // Question steps
+  // Question steps — single or multi select
   return (
     <div>
       {/* Progress bar */}
@@ -1706,31 +1835,57 @@ Respond ONLY with a valid JSON object in this exact format, no extra text:
         </div>
       </div>
 
-      <div style={{ fontSize: 17, fontWeight: 500, color: "#f0f0f0", marginBottom: 20, lineHeight: 1.4 }}>{q.question}</div>
+      <div style={{ fontSize: 17, fontWeight: 500, color: "#f0f0f0", marginBottom: 6, lineHeight: 1.4 }}>{q.question}</div>
+      {isMulti && <div style={{ fontSize: 12, color: "#444", marginBottom: 16 }}>Select all that apply</div>}
+      {!isMulti && <div style={{ fontSize: 12, color: "#444", marginBottom: 16 }}>Choose one</div>}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {q.options.map(opt => (
-          <button key={opt} onClick={() => answer(opt)} style={{
-            background: "#0e0e0e", border: "1px solid #1e1e1e",
-            borderRadius: 9, padding: "12px 16px", cursor: "pointer",
-            textAlign: "left", fontSize: 14, color: "#aaa",
-            fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s",
-          }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = "#f4c430"; e.currentTarget.style.color = "#f0f0f0"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = "#1e1e1e"; e.currentTarget.style.color = "#aaa"; }}
-          >
-            {opt}
-          </button>
-        ))}
+        {q.options.map(opt => {
+          const isSelected = selected.includes(opt);
+          return (
+            <button key={opt} onClick={() => isMulti ? toggleOption(opt) : commitStep(opt)} style={{
+              background: isSelected ? "#f4c43015" : "#0e0e0e",
+              border: `1px solid ${isSelected ? "#f4c430" : "#1e1e1e"}`,
+              borderRadius: 9, padding: "12px 16px", cursor: "pointer",
+              textAlign: "left", fontSize: 14,
+              color: isSelected ? "#f4c430" : "#aaa",
+              fontFamily: "'DM Sans', sans-serif", transition: "all 0.15s",
+              display: "flex", alignItems: "center", gap: 10,
+            }}>
+              {isMulti && (
+                <div style={{
+                  width: 18, height: 18, minWidth: 18, borderRadius: 4,
+                  border: `2px solid ${isSelected ? "#f4c430" : "#333"}`,
+                  background: isSelected ? "#f4c430" : "transparent",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, color: "#080808", fontWeight: 700,
+                }}>{isSelected ? "✓" : ""}</div>
+              )}
+              {opt}
+            </button>
+          );
+        })}
       </div>
 
-      {step > 0 && (
-        <button style={{ ...S.btn("ghost"), marginTop: 16 }} onClick={() => setStep(step - 1)}>← Previous</button>
-      )}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+        {step > 0
+          ? <button style={{ ...S.btn("ghost") }} onClick={() => { setStep(step - 1); setSelected([]); }}>← Back</button>
+          : <div />
+        }
+        {isMulti && (
+          <button
+            style={{ ...S.btn(selected.length > 0 ? "primary" : "outline"), opacity: selected.length > 0 ? 1 : 0.4 }}
+            onClick={() => selected.length > 0 && commitStep(selected)}
+          >
+            Continue →
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
+// ── Manual Builder ────────────────────────────────────────────────────────────
 // ── Manual Builder ────────────────────────────────────────────────────────────
 function ManualBuilder({ onSave }) {
   const [name, setName] = useState("");
