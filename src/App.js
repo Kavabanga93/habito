@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 // ── Supabase ──────────────────────────────────────────────────────────────────
@@ -509,14 +509,26 @@ function HabitoApp() {
 
   // Listen for auth state changes
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    let resolved = false;
+    const resolve = (sessionUser) => {
+      if (resolved) return;
+      resolved = true;
+      setUser(sessionUser ?? null);
       setAuthLoading(false);
+    };
+
+    // Timeout fallback — if Supabase takes >3s, proceed as logged-out
+    const timeout = setTimeout(() => resolve(null), 3000);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout);
+      resolve(session?.user ?? null);
     });
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-    return () => subscription.unsubscribe();
+    return () => { subscription.unsubscribe(); clearTimeout(timeout); };
   }, []);
 
   // Load routines once auth is resolved
