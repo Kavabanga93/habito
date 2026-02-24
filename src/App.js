@@ -490,7 +490,7 @@ function HabitoApp() {
 
   useEffect(() => {
     loadData().then(d => {
-      setRoutines(d?.routines || DEFAULT_ROUTINES);
+      setRoutines(d?.routines || []);
       setLoaded(true);
     });
   }, []);
