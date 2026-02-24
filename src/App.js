@@ -1,6 +1,12 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+// ── Supabase ──────────────────────────────────────────────────────────────────
+const SUPABASE_URL = "https://bvfqnbaghwrhfysxfcjf.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2ZnFuYmFnaHdyaGZ5c3hmY2pmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NjAxMDksImV4cCI6MjA4NzUzNjEwOX0.fqEzJ2jA3WsoVbr7SDsRJeTd-IVa8ZwgIu1yDB1pNsY";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ── Simple Router ─────────────────────────────────────────────────────────────
 function usePath() {
@@ -42,15 +48,50 @@ const STORAGE_KEY = "habito_v1";
 
 
 // ── Persistence ───────────────────────────────────────────────────────────────
-async function loadData() {
+async function loadData(userId) {
+  // If logged in, load from Supabase
+  if (userId) {
+    try {
+      const { data, error } = await supabase
+        .from("routines")
+        .select("id, data")
+        .eq("user_id", userId);
+      if (!error && data) return { routines: data.map(r => r.data) };
+    } catch (_) {}
+  }
+  // Fallback to localStorage
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch (_) {}
   return null;
 }
-async function saveData(data) {
+
+async function saveData(data, userId) {
+  // Always save to localStorage as backup
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+  // If logged in, also sync to Supabase
+  if (userId && data.routines) {
+    try {
+      // Upsert each routine individually
+      for (const routine of data.routines) {
+        await supabase.from("routines").upsert({
+          id: routine.id,
+          user_id: userId,
+          data: routine,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "id,user_id" });
+      }
+      // Delete routines no longer in state
+      const ids = data.routines.map(r => r.id);
+      if (ids.length > 0) {
+        await supabase.from("routines")
+          .delete()
+          .eq("user_id", userId)
+          .not("id", "in", `(${ids.join(",")})`);
+      }
+    } catch (_) {}
+  }
 }
 
 // ── Icons ────────────────────────────────────────────────────────────────────
@@ -463,17 +504,68 @@ function HabitoApp() {
   const [showCreate, setShowCreate] = useState(false);
   const [showShare, setShowShare] = useState(null);
   const [toast, setToast] = useState(null);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
+  // Listen for auth state changes
   useEffect(() => {
-    loadData().then(d => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load routines once auth is resolved
+  useEffect(() => {
+    if (authLoading) return;
+    loadData(user?.id).then(d => {
       setRoutines(d?.routines || []);
       setLoaded(true);
     });
-  }, []);
+  }, [authLoading, user]);
 
+  // Save whenever routines change
   useEffect(() => {
-    if (loaded) saveData({ routines });
-  }, [routines, loaded]);
+    if (loaded) saveData({ routines }, user?.id);
+  }, [routines, loaded, user]);
+
+  const [showAuth, setShowAuth] = useState(false);
+
+  const signInWithMagicLink = async (email) => {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: window.location.origin + "/app" },
+    });
+    if (error) throw error;
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    showToast("Signed out 👋");
+  };
+
+  // Migrate localStorage data to Supabase on first sign-in
+  useEffect(() => {
+    if (!user || !loaded) return;
+    const migrateKey = "habito_migrated_" + user.id;
+    if (localStorage.getItem(migrateKey)) return;
+    const localRaw = localStorage.getItem(STORAGE_KEY);
+    if (localRaw) {
+      try {
+        const localData = JSON.parse(localRaw);
+        if (localData?.routines?.length > 0) {
+          saveData(localData, user.id);
+          showToast("Your routines have been synced to the cloud! ☁️");
+        }
+      } catch (_) {}
+    }
+    localStorage.setItem(migrateKey, "1");
+  }, [user, loaded]);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -555,21 +647,54 @@ function HabitoApp() {
               </div>
             </div>
           </div>
-          {!activeRoutine && (
-            <button style={S.btn("primary")} onClick={() => setShowCreate(true)}>
-              <Icon name="plus" size={14} /> New Routine
-            </button>
-          )}
-          {activeRoutine && active && (
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={S.btn("ghost")} onClick={() => setShowShare(active)} title="Share">
-                <Icon name="share" size={15} />
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* Auth button */}
+            {!user ? (
+              <button onClick={() => setShowAuth(true)} style={{
+                display: "flex", alignItems: "center", gap: 7,
+                background: "#161616", border: "1px solid #2a2a2a",
+                borderRadius: 8, padding: "7px 12px", cursor: "pointer",
+                fontSize: 12, color: "#888", fontFamily: "'DM Sans', sans-serif",
+                transition: "all 0.2s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#f4c430"; e.currentTarget.style.color = "#f0f0f0"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "#2a2a2a"; e.currentTarget.style.color = "#888"; }}
+              >
+                ☁️ Sign in
               </button>
-              <button style={S.btn("danger")} onClick={() => { if (window.confirm("Delete this routine?")) deleteRoutine(activeRoutine); }} title="Delete">
-                <Icon name="trash" size={15} />
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, background: "#161616", border: "1px solid #2a2a2a", borderRadius: 8, padding: "5px 10px" }}>
+                  {user.user_metadata?.avatar_url
+                    ? <img src={user.user_metadata.avatar_url} alt="" style={{ width: 20, height: 20, borderRadius: "50%" }} />
+                    : <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#f4c430", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#080808", fontWeight: 700 }}>
+                        {(user.user_metadata?.full_name || user.email || "U")[0].toUpperCase()}
+                      </div>
+                  }
+                  <span style={{ fontSize: 12, color: "#666", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {user.user_metadata?.full_name?.split(" ")[0] || user.email?.split("@")[0]}
+                  </span>
+                </div>
+                <button onClick={signOut} style={{ background: "none", border: "none", color: "#333", fontSize: 11, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>Sign out</button>
+              </div>
+            )}
+
+            {!activeRoutine && (
+              <button style={S.btn("primary")} onClick={() => setShowCreate(true)}>
+                <Icon name="plus" size={14} /> New Routine
               </button>
-            </div>
-          )}
+            )}
+            {activeRoutine && active && (
+              <div style={{ display: "flex", gap: 8 }}>
+                <button style={S.btn("ghost")} onClick={() => setShowShare(active)} title="Share">
+                  <Icon name="share" size={15} />
+                </button>
+                <button style={S.btn("danger")} onClick={() => { if (window.confirm("Delete this routine?")) deleteRoutine(activeRoutine); }} title="Delete">
+                  <Icon name="trash" size={15} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tab bar */}
@@ -599,6 +724,7 @@ function HabitoApp() {
         )}
 
         </div>
+        {showAuth && <AuthModal onClose={() => setShowAuth(false)} onSignIn={signInWithMagicLink} />}
         {showCreate && <CreateModal onSave={createRoutine} onClose={() => setShowCreate(false)} />}
         {showShare && <ShareModal routine={showShare} onClose={() => setShowShare(null)} onToast={showToast} />}
 
@@ -2006,6 +2132,86 @@ function ManualBuilder({ onSave }) {
       <button style={{ ...S.btn("primary"), width: "100%", justifyContent: "center", padding: "12px" }} onClick={handleSave}>
         Create Routine <Icon name="arrow" size={14} />
       </button>
+    </div>
+  );
+}
+
+// ── Auth Modal ────────────────────────────────────────────────────────────────
+function AuthModal({ onClose, onSignIn }) {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSubmit = async () => {
+    if (!email.trim() || !email.includes("@")) return setError("Enter a valid email address");
+    setLoading(true);
+    setError(null);
+    try {
+      await onSignIn(email.trim());
+      setSent(true);
+    } catch (e) {
+      setError(e.message || "Something went wrong, try again");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={S.modal} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={{ ...S.modalBox, maxWidth: 380 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, letterSpacing: "0.1em", color: "#f4c430" }}>SYNC YOUR HABITS ☁️</div>
+          <button style={S.btn("ghost")} onClick={onClose}><Icon name="close" size={16} /></button>
+        </div>
+
+        {!sent ? (
+          <>
+            <p style={{ fontSize: 13, color: "#555", marginBottom: 20, lineHeight: 1.7 }}>
+              Sign in to <strong style={{ color: "#888" }}>sync your routines across all devices</strong> and never lose your progress. We'll email you a magic link — no password needed.
+            </p>
+
+            <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+              {["🔒 No password", "📱 Works everywhere", "☁️ Auto-backup"].map(b => (
+                <div key={b} style={{ fontSize: 10, color: "#444", background: "#111", border: "1px solid #1a1a1a", borderRadius: 6, padding: "4px 8px", whiteSpace: "nowrap" }}>{b}</div>
+              ))}
+            </div>
+
+            <label style={{ ...S.label, marginTop: 16 }}>Your email</label>
+            <input
+              style={{ ...S.input, marginBottom: 6 }}
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              autoFocus
+            />
+            {error && <div style={{ fontSize: 12, color: "#ff4444", marginBottom: 10 }}>{error}</div>}
+
+            <button
+              style={{ ...S.btn("primary"), width: "100%", justifyContent: "center", padding: "12px", marginTop: 8, opacity: loading ? 0.6 : 1 }}
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? "Sending..." : "Send magic link →"}
+            </button>
+
+            <p style={{ fontSize: 11, color: "#2a2a2a", textAlign: "center", marginTop: 12 }}>
+              Your routines will sync automatically after sign in
+            </p>
+          </>
+        ) : (
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>📬</div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#f4c430", letterSpacing: "0.1em", marginBottom: 8 }}>CHECK YOUR EMAIL</div>
+            <p style={{ fontSize: 13, color: "#555", lineHeight: 1.7, marginBottom: 20 }}>
+              We sent a magic link to <strong style={{ color: "#888" }}>{email}</strong>.<br />
+              Click it to sign in — it expires in 1 hour.
+            </p>
+            <button style={{ ...S.btn("outline"), margin: "0 auto" }} onClick={onClose}>Got it, I'll check my email</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
