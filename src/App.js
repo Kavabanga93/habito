@@ -626,7 +626,7 @@ const ARTICLES = [
     color: "#4ade80",
     title: "The Life-Changing Benefits of Walking 30 Minutes Every Day",
     readTime: "4 min read",
-    keywords: ["walk", "steps", "movement", "exercise", "cardio", "run", "jog"],
+    keywords: ["walk", "steps", "movement", "exercise", "cardio", "run", "jog", "stroll", "hiking", "outdoor", "nature", "fresh air", "daily walk", "morning walk", "evening walk"],
     summary: "A simple daily walk might be the most underrated health habit you can build.",
     content: `Most people underestimate walking. It's not flashy, it doesn't burn as many calories as a HIIT session, and it doesn't come with a leaderboard. But study after study shows that walking 30 minutes a day is one of the most powerful things you can do for your long-term health.
 
@@ -655,7 +655,7 @@ Start with 10 minutes. Build to 30. Your future self will thank you.`,
     color: "#5bc8ff",
     title: "Why Your Brain Can Only Do 4 Hours of Deep Work Per Day",
     readTime: "5 min read",
-    keywords: ["deep work", "focus", "work", "study", "productivity", "task", "concentration", "writing", "coding", "research"],
+    keywords: ["deep work", "focus", "work", "study", "productivity", "concentration", "writing", "coding", "research", "project", "build", "create", "design", "develop", "client", "deadline", "output", "block #1", "block #2", "hard task", "main task", "priority"],
     summary: "Science explains why pushing past your cognitive limit makes you less productive, not more.",
     content: `Cal Newport, who coined the term "deep work," estimates that most people can sustain only 3-4 hours of truly focused cognitive work per day. Elite performers — chess grandmasters, concert pianists, world-class writers — rarely exceed this ceiling, no matter how motivated they are.
 
@@ -686,7 +686,7 @@ Fewer hours, more depth. That's the counterintuitive secret to getting more done
     color: "#f4c430",
     title: "What Happens to Your Brain in the First 30 Minutes After Waking",
     readTime: "4 min read",
-    keywords: ["morning", "wake", "sleep", "intention", "routine", "alarm", "breakfast", "mindset"],
+    keywords: ["morning", "wake", "sleep", "intention", "routine", "alarm", "breakfast", "mindset", "ritual", "rise", "sunrise", "am", "first thing", "start", "begin", "7am", "6am", "5am", "8am", "fuel", "hydrate", "water"],
     summary: "The first 30 minutes after waking sets the neurological tone for your entire day.",
     content: `The way you spend the first 30 minutes after waking has an outsized impact on your mood, focus, and energy for the rest of the day. This isn't motivational speak — it's neuroscience.
 
@@ -715,7 +715,7 @@ Your morning doesn't have to be a 5am ice-bath marathon. It just has to be yours
     color: "#c084fc",
     title: "The Hidden Power of Rest: Why Doing Nothing Makes You More Productive",
     readTime: "5 min read",
-    keywords: ["rest", "break", "recovery", "lunch", "nap", "relax", "shutdown", "wind", "evening", "sleep"],
+    keywords: ["rest", "break", "recovery", "lunch", "nap", "relax", "shutdown", "wind", "evening", "sleep", "recharge", "pause", "downtime", "switch off", "decompress", "reset", "cool down", "buffer", "transition"],
     summary: "Taking real breaks isn't lazy — it's one of the highest-leverage habits you can build.",
     content: `We live in a culture that glamorizes busyness. But the science is unambiguous: rest is not the opposite of productivity. It's what makes productivity possible.
 
@@ -744,7 +744,7 @@ The highest performers aren't the ones who rest the least. They're the ones who 
     color: "#ff6b35",
     title: "The Minimum Effective Dose of Exercise for Maximum Results",
     readTime: "5 min read",
-    keywords: ["workout", "gym", "exercise", "fitness", "weights", "strength", "training", "lift", "yoga", "stretch", "run", "cardio"],
+    keywords: ["workout", "gym", "exercise", "fitness", "weights", "strength", "training", "lift", "yoga", "stretch", "run", "cardio", "push", "pull", "squat", "session", "hiit", "circuit", "body", "sweat", "sport", "athletic", "active", "move", "physical"],
     summary: "You don't need to spend hours in the gym. Science reveals the exact minimum that delivers maximum benefit.",
     content: `More isn't always better when it comes to exercise. In fact, the concept of the "minimum effective dose" — the smallest amount of stimulus needed to produce the desired result — is one of the most liberating ideas in fitness science.
 
@@ -775,7 +775,7 @@ The best workout plan is the one you'll actually stick to. Start small. Show up 
     color: "#f4c430",
     title: "How to Actually Retain What You Learn (The Science of Memory)",
     readTime: "5 min read",
-    keywords: ["learn", "read", "study", "book", "course", "skill", "practice", "hobby", "language", "music"],
+    keywords: ["learn", "read", "study", "book", "course", "skill", "practice", "hobby", "language", "music", "chapter", "lesson", "tutorial", "podcast", "develop", "improve", "growth", "knowledge", "educate", "pages", "audiobook", "article"],
     summary: "Most people learn wrong. Here's how your brain actually stores information long-term.",
     content: `You've probably had this experience: you read a book, feel inspired, and then a month later can barely remember what it was about. This isn't a memory problem. It's a learning strategy problem.
 
@@ -810,7 +810,7 @@ Learn less, more often, with more sleep. That's the formula.`,
     color: "#4ade80",
     title: "The Neuroscience of Habits: Why Streaks Work and How to Build Them",
     readTime: "4 min read",
-    keywords: ["habit", "streak", "consistency", "routine", "daily", "mindset", "motivation", "meditation"],
+    keywords: ["habit", "streak", "consistency", "routine", "daily", "mindset", "motivation", "meditation", "discipline", "journal", "reflect", "gratitude", "affirmation", "breathe", "breathing", "mindful", "calm", "intention", "clarity", "visualise", "visualize", "review"],
     summary: "Your brain is literally rewiring itself every time you complete a habit. Here's how to use that.",
     content: `Every time you complete a habit, your brain lays down a little more myelin — a fatty sheath that wraps around neural pathways and makes them fire faster and more efficiently. Habits aren't just behavioral patterns. They're physical structures in your brain.
 
@@ -843,7 +843,7 @@ Your habits are a vote for the person you want to become. Cast enough votes, and
     color: "#4ade80",
     title: "What to Eat (and When) to Maximize Your Energy and Focus",
     readTime: "4 min read",
-    keywords: ["eat", "meal", "food", "breakfast", "lunch", "dinner", "nutrition", "fuel", "diet", "coffee"],
+    keywords: ["eat", "meal", "food", "breakfast", "lunch", "dinner", "nutrition", "fuel", "diet", "coffee", "cook", "prep", "prepare", "healthy", "protein", "snack", "hydrate", "water", "smoothie", "shake", "fast", "fasting"],
     summary: "Your diet is the foundation your productivity is built on. Here's what the science says.",
     content: `You can have the best routine in the world, but if your nutrition is off, you're running on a bad fuel source. Cognitive performance, mood, and sustained energy are all directly influenced by what you eat — and when.
 
@@ -878,7 +878,7 @@ Food is information for your brain. Feed it well.`,
     color: "#c084fc",
     title: "The Perfect Evening Routine: How to Set Up Tomorrow's Success Tonight",
     readTime: "4 min read",
-    keywords: ["evening", "night", "shutdown", "review", "plan", "tomorrow", "wind", "sleep", "journal"],
+    keywords: ["evening", "night", "shutdown", "review", "plan", "tomorrow", "wind", "sleep", "journal", "diary", "reflect", "recap", "end", "finish", "close", "pm", "bedtime", "unwind", "decompress", "debrief", "check in", "wrap up", "daily review", "hard shutdown"],
     summary: "What you do in the last hour before bed determines how good tomorrow will be.",
     content: `Most productivity advice focuses on mornings. But the truth is, your morning starts the night before. How you wind down in the evening determines how well you sleep, how rested you feel, and how clearly you think the next day.
 
@@ -911,7 +911,7 @@ End your day with intention. Your future self wakes up to whatever you set up to
     color: "#5bc8ff",
     title: "Why Batching Your Email Makes You Dramatically More Productive",
     readTime: "3 min read",
-    keywords: ["email", "messages", "admin", "batch", "inbox", "slack", "notifications", "communication"],
+    keywords: ["email", "messages", "admin", "batch", "inbox", "slack", "notifications", "communication", "respond", "reply", "correspondence", "paperwork", "tasks", "admin", "errands", "quick wins", "low energy", "calls", "meetings", "catch up"],
     summary: "Checking email constantly is one of the most expensive habits modern workers have.",
     content: `The average knowledge worker checks their email 74 times per day. Each check takes about 64 seconds, but the real cost is far higher — it takes an average of 23 minutes to fully regain deep focus after an interruption.
 
@@ -939,7 +939,11 @@ Your inbox is not your to-do list. Treat it like a mailbox — process it, empty
 
 // Match articles to user's routine tasks
 function getRelevantArticles(routines) {
-  if (!routines || routines.length === 0) return ARTICLES.slice(0, 3);
+  if (!routines || routines.length === 0) {
+    // No routines — return a shuffled selection of 3
+    return [...ARTICLES].sort(() => Math.random() - 0.5).slice(0, 3);
+  }
+
   const allTaskTitles = routines.flatMap(r => r.blocks.map(b => b.title.toLowerCase()));
   const allText = allTaskTitles.join(" ");
 
@@ -948,13 +952,14 @@ function getRelevantArticles(routines) {
     return { ...article, score: matches };
   }).sort((a, b) => b.score - a.score);
 
-  // Return top matches first, then fill with others
-  const top = scored.filter(a => a.score > 0).slice(0, 6);
-  if (top.length < 3) {
-    const rest = scored.filter(a => a.score === 0).slice(0, 3 - top.length);
-    return [...top, ...rest];
-  }
-  return top;
+  const matched = scored.filter(a => a.score > 0).slice(0, 6);
+
+  // If we have enough matches, return them
+  if (matched.length >= 3) return matched;
+
+  // Otherwise fill remaining slots with random unmatched articles
+  const unmatched = scored.filter(a => a.score === 0).sort(() => Math.random() - 0.5);
+  return [...matched, ...unmatched].slice(0, 4);
 }
 
 // ── Article Section ───────────────────────────────────────────────────────────
