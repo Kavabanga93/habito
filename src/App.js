@@ -40,30 +40,6 @@ const todayKey = () => new Date().toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const STORAGE_KEY = "habito_v1";
 
-const DEFAULT_ROUTINES = [
-  {
-    id: "demo1",
-    name: "Daily Productivity",
-    emoji: "🌅",
-    color: "#f4c430",
-    blocks: [
-      { id: "b1",  title: "Morning intention — no phone yet", duration: "15 min" },
-      { id: "b2",  title: "Light movement & fuel up", duration: "15 min" },
-      { id: "b3",  title: "Deep Work #1 — Your hardest task", duration: "90 min" },
-      { id: "b4",  title: "Email & messages batch", duration: "20 min" },
-      { id: "b5",  title: "Workout — full energy reset", duration: "60 min" },
-      { id: "b6",  title: "Cool down, shower & lunch", duration: "20 min" },
-      { id: "b7",  title: "Deep Work #2 — Secondary tasks", duration: "60 min" },
-      { id: "b8",  title: "Quick wins & low-energy tasks", duration: "20 min" },
-      { id: "b9",  title: "Dedicated hobby learning time", duration: "45 min" },
-      { id: "b10", title: "Daily review — what got done?", duration: "10 min" },
-      { id: "b11", title: "Hard shutdown — close everything", duration: "5 min" },
-    ],
-    history: {},
-    createdAt: Date.now(),
-    shared: false,
-  },
-];
 
 // ── Persistence ───────────────────────────────────────────────────────────────
 async function loadData() {
