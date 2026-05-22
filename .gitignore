@@ -23,5 +23,6 @@ yarn-debug.log*
 yarn-error.log*
 Wav2Lip/
 GFPGAN/
+SadTalker/
 video_assets/gfpgan_frames/
 video_assets/gfpgan_output/
