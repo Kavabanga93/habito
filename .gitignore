@@ -22,3 +22,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 Wav2Lip/
+GFPGAN/
+video_assets/gfpgan_frames/
+video_assets/gfpgan_output/
