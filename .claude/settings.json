@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "permissions": {
+        "allow": [
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__generate_image",
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__generate_video",
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__job_display",
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__media_upload",
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__media_confirm",
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__show_generations",
+            "mcp__90282e3d-646f-4880-85f8-f5433001fafe__virality_predictor"
+        ]
+    }
+}
