@@ -18,6 +18,7 @@ sci-fi вселенной **Astralis**. Бренд уже продаётся ~6 
 - Сайт: **astrouniverses.com** (официальный, публичный источник; страница About — astrouniverses.com/about)
   - ⚠️ Сайт закрыт от автоматического доступа (403 / bot-protection) — Claude не может прочитать его напрямую. Если нужен текст с сайта, скопируй его в чат вручную.
 - Платформы: Instagram (Reels — основной охват) + Telegram (комьюнити/дропы); TikTok как зеркало
+  - Instagram: **@enter.astroverse** — instagram.com/enter.astroverse (закрыт от автодоступа, читать вручную)
 - Текущий сезон: **Season of the Archive** (relaunch, не launch)
 
 ---
